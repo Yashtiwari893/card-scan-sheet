@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { google } from 'googleapis';
 
 export async function POST(req: NextRequest) {
   try {
@@ -9,18 +8,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'phone required' }, { status: 400 });
     }
 
-    const oauth2Client = new google.auth.OAuth2(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
-      process.env.GOOGLE_REDIRECT_URI  // ← explicitly passing redirect_uri
-    );
-
-    const setupUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: ['https://www.googleapis.com/auth/spreadsheets'],
-      state: phone,
-      prompt: 'consent',
-    });
+    // Return a clean, professional redirect URL on our own domain
+    const setupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://card-scan-sheet-w8yl.vercel.app'}/api/connect/sheets?phone=${phone}`;
 
     return NextResponse.json({ setupUrl });
   } catch (error: any) {

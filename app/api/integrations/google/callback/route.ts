@@ -43,6 +43,27 @@ export async function GET(req: NextRequest) {
       { upsert: true }
     );
 
+    // Send WhatsApp Confirmation using 11za API
+    const ELEVENZA_API_KEY = process.env.ELEVENZA_API_KEY;
+    if (ELEVENZA_API_KEY) {
+      try {
+        await fetch(`https://app.11za.in/apis/messages/sendTemplateMessage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${ELEVENZA_API_KEY}`
+          },
+          body: JSON.stringify({
+            phoneNumber: phone,
+            message: `✅ *Google Sheet Connected Successfully!*\n\nAb se jo bhi business card scan karoge, uska data automatically tumhari Google Sheet mein save hota rahega 🎉\n\nHappy Networking! 🤝\n\n_Reply *hi* to scan a card_`
+          })
+        });
+      } catch (waError: any) {
+        console.error("WhatsApp notification error:", waError.message);
+      }
+    }
+
+
     return new NextResponse("✅ Google Sheet connected! You can close this tab.", { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 
   } catch (error: any) {
