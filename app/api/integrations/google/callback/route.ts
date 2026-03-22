@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/lib/db/models/User';
-import { getTokens, createScanSheet } from '@/lib/google/sheets';
+import { google } from 'googleapis';
+import { createScanSheet } from '@/lib/google/sheets';
+
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -14,7 +16,13 @@ export async function GET(req: NextRequest) {
 
   try {
     await dbConnect();
-    const tokens = await getTokens(code);
+    const oauth2Client = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+    const { tokens } = await oauth2Client.getToken(code);
+
 
     if (!tokens.access_token || !tokens.refresh_token) {
        throw new Error("Failed to get tokens from Google");
