@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import axios from 'axios';
 import dbConnect from '@/lib/db/mongodb';
 import User from '@/lib/db/models/User';
 import Contact from '@/lib/db/models/Contact';
-import { extractBusinessCardDetails } from '@/lib/ai/gemini';
+import { extractCard } from '@/lib/ai/aiRouter';
 import { appendCardToSheet } from '@/lib/google/sheets';
 
 export async function POST(req: NextRequest) {
@@ -22,13 +21,8 @@ export async function POST(req: NextRequest) {
       user = await User.create({ waPhone: phone });
     }
 
-    // Download image from URL as binary
-    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-    const imageBuffer = Buffer.from(response.data);
-    const mimeType = response.headers['content-type'] || 'image/jpeg';
-
-    // Extract details via Gemini Vision API
-    const contactData = await extractBusinessCardDetails(imageBuffer, mimeType);
+    // Extract details via Multi-AI Router (Groq/Mistral/Gemini)
+    const contactData = await extractCard(imageUrl);
 
     // Save contact to DB
     const contact = await Contact.create({
