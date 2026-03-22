@@ -28,11 +28,11 @@ export async function createScanSheet(accessToken: string, refreshToken: string)
   auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
 
   const sheets = google.sheets({ version: 'v4', auth });
-  
+
   const response = await sheets.spreadsheets.create({
     requestBody: {
       properties: {
-        title: 'Card Scans'
+        title: '11za-card-scans'
       }
     }
   });
