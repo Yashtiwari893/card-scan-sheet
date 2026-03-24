@@ -12,6 +12,7 @@ export interface IContact extends Document {
   linkedin?: string;
   rawText?: string;
   imageUrl?: string;
+  remark?: string;
   scannedAt: Date;
 }
 
@@ -27,6 +28,7 @@ const ContactSchema = new Schema<IContact>({
   linkedin: { type: String },
   rawText: { type: String },
   imageUrl: { type: String },
+  remark: { type: String },
   scannedAt: { type: Date, default: Date.now }
 });
 

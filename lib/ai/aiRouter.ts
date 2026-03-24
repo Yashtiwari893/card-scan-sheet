@@ -102,3 +102,24 @@ export async function extractCard(imageUrl: string) {
 
   throw new Error('All AI providers failed');
 }
+
+// --- AUDIO TRANSCRIPTION (Groq Whisper) ---
+export async function transcribeAudio(audioUrl: string) {
+  try {
+    const response = await fetch(audioUrl);
+    const blob = await response.blob();
+
+    // Groq SDK requires a file-like object with a name
+    const file = new File([blob], 'recording.ogg', { type: blob.type || 'audio/ogg' });
+
+    const transcription = await groq.audio.transcriptions.create({
+      file: file,
+      model: 'whisper-large-v3',
+    });
+
+    return transcription.text;
+  } catch (error: any) {
+    console.error('Transcription error:', error.message);
+    throw new Error('Failed to transcribe audio with Groq');
+  }
+}
