@@ -115,8 +115,12 @@ export async function transcribeAudio(audioUrl: string) {
     const transcription = await groq.audio.transcriptions.create({
       file: file,
       model: 'whisper-large-v3',
+      language: 'hi', // Set to Hindi to handle Hinglish/Hindi better and avoid Japanese auto-detect bugs
+      prompt: 'This is a voice note about a business card contact, mentioning names or meeting details in Hindi or English.',
+      response_format: 'json'
     });
 
+    console.log('Transcription Result:', transcription.text);
     return transcription.text;
   } catch (error: any) {
     console.error('Transcription error:', error.message);

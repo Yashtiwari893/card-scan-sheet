@@ -7,7 +7,12 @@ import { updateCardRemarkInSheet } from '@/lib/google/sheets';
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone, remarkText, audioUrl } = await req.json();
+    const body = await req.json();
+    
+    // Support both CamelCase and snake_case
+    const phone = body.phone || body.sender_phone;
+    const remarkText = body.remarkText || body.last_message || '';
+    const audioUrl = body.audioUrl || body.audio_url;
 
     if (!phone) {
       return NextResponse.json({ error: 'Phone is required' }, { status: 400 });
@@ -20,10 +25,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    let finalRemark = remarkText || '';
+    let finalRemark = remarkText;
 
-    // 1. Handle Audio Transcription if needed
-    if (audioUrl) {
+    // 1. Handle Audio Transcription only if no text was provided
+    if (audioUrl && !finalRemark) {
       console.log('Transcribing remark audio...');
       const transcribedText = await transcribeAudio(audioUrl);
       finalRemark = transcribedText || finalRemark;
