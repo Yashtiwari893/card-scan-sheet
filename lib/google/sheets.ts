@@ -9,7 +9,10 @@ const oauth2Client = new google.auth.OAuth2(
 export function getAuthUrl(phone: string) {
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
-    scope: ['https://www.googleapis.com/auth/spreadsheets'],
+    scope: [
+      'https://www.googleapis.com/auth/spreadsheets',
+      'https://www.googleapis.com/auth/calendar.events'
+    ],
     state: phone,
     prompt: 'consent'
   });
@@ -42,10 +45,10 @@ export async function createScanSheet(accessToken: string, refreshToken: string)
   // Add Headers
   await sheets.spreadsheets.values.update({
     spreadsheetId: spreadsheetId!,
-    range: 'Sheet1!A1:J1', // Name, Company, Job Title, Email, Phone, Website, Address, LinkedIn, Scanned At, Remarks (Column J)
+    range: 'Sheet1!A1:K1', // Name, Company, Job Title, Email, Phone, Website, Address, LinkedIn, Scanned At, Remarks, Meeting (Column K)
     valueInputOption: 'RAW',
     requestBody: {
-      values: [['Name', 'Company', 'Job Title', 'Email', 'Phone', 'Website', 'Address', 'LinkedIn', 'Scanned At', 'Remarks']]
+      values: [['Name', 'Company', 'Job Title', 'Email', 'Phone', 'Website', 'Address', 'LinkedIn', 'Scanned At', 'Remarks', 'Meeting']]
     }
   });
 
@@ -112,6 +115,37 @@ export async function updateCardRemarkInSheet(spreadsheetId: string, accessToken
     valueInputOption: 'RAW',
     requestBody: {
       values: [[remark]]
+    }
+  });
+}
+
+/**
+ * Updates the meeting time for the very last row in the user's Google Sheet.
+ */
+export async function updateCardMeetingInSheet(spreadsheetId: string, accessToken: string, refreshToken: string, meetingTime: string) {
+  const auth = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET
+  );
+  auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
+
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range: 'Sheet1!A:A',
+  });
+
+  const lastRow = (res.data.values?.length || 0);
+  if (lastRow < 2) return;
+
+  // Update Column K for the last row
+  await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `Sheet1!K${lastRow}`,
+    valueInputOption: 'RAW',
+    requestBody: {
+      values: [[meetingTime]]
     }
   });
 }

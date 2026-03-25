@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
       phone: contactData.phone || '',
       website: contactData.website || '',
       address: contactData.address || '',
-      linkedin: contactData.linkedin || ''
+      linkedin: contactData.linkedin || '',
+      scheduleLink: `${process.env.NEXT_PUBLIC_APP_URL || ''}/schedule/${contact._id}`
     });
 
   } catch (error: any) {

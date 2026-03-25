@@ -1,0 +1,923 @@
+{
+  "_id": "69c0310e0d7a94795c2e01de",
+  "name": "Card Scanner Bot",
+  "nodes": [
+    {
+      "id": "NODE_CHECK_USER",
+      "type": "html-template",
+      "text": "Node NODE_CHECK_USER",
+      "position": { "x": -3400, "y": 0 },
+      "data": {
+        "tag": "ApiRequest",
+        "apiData": {
+          "method": "GET",
+          "url": "https://card-scan-sheet-w8yl.vercel.app/api/bot/check-user?phone={{recipient.mobileNo_wo_code}}",
+          "params": [],
+          "headers": [{ "key": "Content-Type", "value": "application/json" }],
+          "urlEncoded": [],
+          "bodyType": "none",
+          "bodyJson": "{}",
+          "bodyRaw": "",
+          "formData": [],
+          "authType": "none",
+          "bearerToken": "",
+          "basicUsername": "",
+          "basicPassword": "",
+          "apiKey": ""
+        },
+        "storeResponseVariable": [
+          { "variable": "user_exists", "variableValue": "response.exists" },
+          { "variable": "user_name", "variableValue": "response.name" },
+          { "variable": "sheets_ok", "variableValue": "response.sheetsConnected" }
+        ]
+      }
+    },
+    {
+      "id": "NODE_USER_EXISTS_COND",
+      "type": "html-template",
+      "text": "Node NODE_USER_EXISTS_COND",
+      "position": { "x": -2800, "y": 0 },
+      "data": {
+        "tag": "Condition",
+        "operation": "and",
+        "conditionObj": [{ "variable": "{{custom.user_exists}}", "operator": "equals", "variableValue": "true" }]
+      }
+    },
+    {
+      "id": "NODE_GET_EMAIL",
+      "type": "html-template",
+      "text": "Node NODE_GET_EMAIL",
+      "position": { "x": -2200, "y": 600 },
+      "data": {
+        "textTagObj": { "headercontent": "", "textContent": "Welcome! 👋\nPlease share your email to get started." },
+        "storeVariable": "user_email",
+        "tag": "AskText",
+        "attempt": 1,
+        "validationerrorMsg": "Please enter a valid email address.",
+        "validationsetting": false,
+        "aditionalstatus": false,
+        "minvalue": "",
+        "maxvalue": ""
+      }
+    },
+    {
+      "id": "NODE_REGISTER_API",
+      "type": "html-template",
+      "text": "Node NODE_REGISTER_API",
+      "position": { "x": -1600, "y": 600 },
+      "data": {
+        "tag": "ApiRequest",
+        "apiData": {
+          "method": "POST",
+          "url": "https://card-scan-sheet-w8yl.vercel.app/api/bot/register",
+          "params": [],
+          "headers": [{ "key": "Content-Type", "value": "application/json" }],
+          "urlEncoded": [],
+          "bodyType": "json",
+          "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\",\n  \"email\": \"{{custom.user_email}}\"\n}",
+          "bodyRaw": "",
+          "formData": [],
+          "authType": "none",
+          "bearerToken": "",
+          "basicUsername": "",
+          "basicPassword": "",
+          "apiKey": ""
+        },
+        "storeResponseVariable": [{ "variable": "user_name", "variableValue": "response.name" }]
+      }
+    },
+    {
+      "id": "NODE_REGISTER_SUCCESS",
+      "type": "html-template",
+      "text": "Node NODE_REGISTER_SUCCESS",
+      "position": { "x": -1000, "y": 600 },
+      "data": {
+        "tag": "SendText",
+        "textTagObj": { "headercontent": "", "textContent": "✅ You're registered!\n\nSend a business card photo to start scanning 📸" }
+      }
+    },
+    {
+      "id": "NODE_REGISTER_FAIL",
+      "type": "html-template",
+      "text": "Node NODE_REGISTER_FAIL",
+      "position": { "x": -1600, "y": 1000 },
+      "data": {
+        "tag": "SendText",
+        "textTagObj": { "headercontent": "", "textContent": "❌ Registration failed. Please send *hi* to try again." }
+      }
+    },
+    {
+      "id": "NODE_SHEETS_COND",
+      "type": "html-template",
+      "text": "Node NODE_SHEETS_COND",
+      "position": { "x": -1978, "y": -100 },
+      "data": {
+        "tag": "Condition",
+        "operation": "and",
+        "conditionObj": [{ "variable": "{{custom.sheets_ok}}", "operator": "equals", "variableValue": "true" }]
+      }
+    },
+    {
+      "id": "NODE_WELCOME_BACK_SHEET_DONE",
+      "type": "html-template",
+      "text": "Node NODE_WELCOME_BACK_SHEET_DONE",
+      "position": { "x": -1300, "y": -500 },
+      "data": {
+        "selectInteractive": {
+          "channel": "whatsapp",
+          "content": {
+            "contentType": "interactive",
+            "interactive": {
+              "subType": "buttons",
+              "components": {
+                "header": { "type": "text", "text": "" },
+                "body": { "type": "text", "text": "Welcome back! 👋\n\nWhat would you like to do?" },
+                "footer": { "type": "text", "text": "" },
+                "buttons": [
+                  { "type": "reply", "reply": { "payload": "btn-scan-card", "title": "Scan a Business Card" } }
+                ]
+              }
+            }
+          },
+          "documentName": "",
+          "subType": "buttons"
+        },
+        "tag": "AskButton",
+        "storeVariable": "main_choice",
+        "storeId": "",
+        "attempt": 1,
+        "interactiveType": "static",
+        "validationerrorMsg": ""
+      }
+    },
+    {
+      "id": "NODE_WELCOME_BACK",
+      "type": "html-template",
+      "text": "Node NODE_WELCOME_BACK",
+      "position": { "x": -1300, "y": -100 },
+      "data": {
+        "selectInteractive": {
+          "channel": "whatsapp",
+          "content": {
+            "contentType": "interactive",
+            "interactive": {
+              "subType": "buttons",
+              "components": {
+                "header": { "type": "text", "text": "" },
+                "body": { "type": "text", "text": "Welcome back! 👋\n\nWhat would you like to do?" },
+                "footer": { "type": "text", "text": "" },
+                "buttons": [
+                  { "type": "reply", "reply": { "payload": "btn-scan-card", "title": "Scan a Business Card" } },
+                  { "type": "reply", "reply": { "payload": "btn-setup-sheet", "title": "Setup Google Sheet" } }
+                ]
+              }
+            }
+          },
+          "documentName": "",
+          "subType": "buttons"
+        },
+        "tag": "AskButton",
+        "storeVariable": "main_choice",
+        "storeId": "",
+        "attempt": 1,
+        "interactiveType": "static",
+        "validationerrorMsg": ""
+      }
+    },
+    {
+      "id": "NODE_ASK_IMAGE",
+      "type": "html-template",
+      "text": "Node NODE_ASK_IMAGE",
+      "position": { "x": -530, "y": -931 },
+      "data": {
+        "textTagObj": { "headercontent": "", "textContent": "📸 Please send a clear photo of the business card.\n\nMake sure it's well-lit for better accuracy ✨" },
+        "storeVariable": "media_url",
+        "tag": "AskFile",
+        "attempt": 1,
+        "validationerrorMsg": "",
+        "validationsetting": false
+      }
+    },
+    {
+      "id": "NODE_SCANNING_MSG",
+      "type": "html-template",
+      "text": "Node NODE_SCANNING_MSG",
+      "position": { "x": 200, "y": -1019 },
+      "data": {
+        "textTagObj": { "headercontent": "", "textContent": "⏳ Scanning your card...\n\n🤖 AI is reading the details. Please wait a moment..." },
+        "tag": "SendText"
+      }
+    },
+    {
+      "id": "NODE_SCAN_API",
+      "type": "html-template",
+      "text": "Node NODE_SCAN_API",
+      "position": { "x": 800, "y": -800 },
+      "data": {
+        "tag": "ApiRequest",
+        "apiData": {
+          "method": "POST",
+          "url": "https://card-scan-sheet-w8yl.vercel.app/api/bot/scan-card",
+          "params": [],
+          "headers": [{ "key": "Content-Type", "value": "application/json" }],
+          "urlEncoded": [],
+          "bodyType": "json",
+          "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\",\n  \"imageUrl\": \"{{custom.media_url}}\"\n}",
+          "bodyRaw": "",
+          "formData": [],
+          "authType": "none",
+          "bearerToken": "",
+          "basicUsername": "",
+          "basicPassword": "",
+          "apiKey": ""
+        },
+        "storeResponseVariable": [
+          { "variable": "card_name", "variableValue": "response.name" },
+          { "variable": "card_company", "variableValue": "response.company" },
+          { "variable": "card_role", "variableValue": "response.jobTitle" },
+          { "variable": "card_email", "variableValue": "response.email" },
+          { "variable": "card_phone", "variableValue": "response.phone" },
+          { "variable": "card_website", "variableValue": "response.website" },
+          { "variable": "card_address", "variableValue": "response.address" },
+          { "variable": "card_linkedin", "variableValue": "response.linkedin" },
+          { "variable": "contact_id", "variableValue": "response.contactId" },
+          { "variable": "schedule_link", "variableValue": "response.scheduleLink" }
+        ]
+      }
+    },
+    {
+      "id": "NODE_SCAN_RESULT_MSG",
+      "type": "html-template",
+      "text": "Node NODE_SCAN_RESULT_MSG",
+      "position": { "x": 1208, "y": -1423 },
+      "data": {
+        "textTagObj": {
+          "headercontent": "",
+          "textContent": "✅ *Card Scanned Successfully!*\n\nName: *{{custom.card_name}}*\nCompany: *{{custom.card_company}}*\nDesignation: *{{custom.card_role}}*\nEmail: {{custom.card_email}}\nPhone: *{{custom.card_phone}}*\nWebsite: {{custom.card_website}}\nAddress: {{custom.card_address}}\nLinkedIn: {{custom.card_linkedin}}"
+        },
+        "tag": "SendText"
+      }
+    },
+    {
+      "id": "NODE_SCAN_ERROR_MSG",
+      "type": "html-template",
+      "text": "Node NODE_SCAN_ERROR_MSG",
+      "position": { "x": 1400, "y": -400 },
+      "data": {
+        "tag": "SendText",
+        "textTagObj": { "headercontent": "", "textContent": "❌ Could not scan the card.\n\nPlease try again with a clearer image.\nReply *M* for main menu" }
+      }
+    },
+    {
+      "id": "NODE_ASK_REMARK",
+      "type": "html-template",
+      "text": "Node NODE_ASK_REMARK",
+      "position": { "x": 1921, "y": -1486 },
+      "data": {
+        "selectInteractive": {
+          "channel": "whatsapp",
+          "content": {
+            "contentType": "interactive",
+            "interactive": {
+              "subType": "buttons",
+              "components": {
+                "header": { "type": "text", "text": "🤖 11za AI - Add Remark" },
+                "body": { "type": "text", "text": "📝 Would you like to add a remark for *{{custom.card_name}}*?\n\nYou can type a note or send a 🎙️ voice note.\n\nOr tap *Skip* to continue." },
+                "footer": { "type": "text", "text": "Powered by 11za AI" },
+                "buttons": [
+                  { "type": "reply", "reply": { "payload": "btn-add-remark", "title": "Add Remark" } },
+                  { "type": "reply", "reply": { "payload": "btn-skip-remark", "title": "Skip" } }
+                ]
+              }
+            }
+          },
+          "documentName": "",
+          "subType": "buttons"
+        },
+        "tag": "AskButton",
+        "storeVariable": "remark_choice",
+        "storeId": "",
+        "attempt": 1,
+        "interactiveType": "static",
+        "validationerrorMsg": ""
+      }
+    },
+    {
+      "id": "NODE_GET_REMARK_TEXT",
+      "type": "html-template",
+      "text": "Node NODE_GET_REMARK_TEXT",
+      "position": { "x": 2421, "y": -1700 },
+      "data": {
+        "textTagObj": { "headercontent": "", "textContent": "🎙️ Please send your remark as a *voice note* or type it as a *text message*.\n\n_11za AI will save it for you!_ 🤖" },
+        "storeVariable": "remark_text",
+        "tag": "AskText",
+        "attempt": 1,
+        "validationerrorMsg": "",
+        "validationsetting": false,
+        "aditionalstatus": false,
+        "minvalue": "",
+        "maxvalue": ""
+      }
+    },
+    {
+      "id": "NODE_REMARK_API",
+      "type": "html-template",
+      "text": "Node NODE_REMARK_API",
+      "position": { "x": 3000, "y": -1700 },
+      "data": {
+        "tag": "ApiRequest",
+        "apiData": {
+          "method": "POST",
+          "url": "https://card-scan-sheet-w8yl.vercel.app/api/bot/add-remark",
+          "params": [],
+          "headers": [{ "key": "Content-Type", "value": "application/json" }],
+          "urlEncoded": [],
+          "bodyType": "json",
+          "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\",\n  \"remarkText\": \"{{custom.remark_text}}\"\n}",
+          "bodyRaw": "",
+          "formData": [],
+          "authType": "none",
+          "bearerToken": "",
+          "basicUsername": "",
+          "basicPassword": "",
+          "apiKey": ""
+        },
+        "storeResponseVariable": [
+          { "variable": "remark_saved", "variableValue": "response.success" }
+        ]
+      }
+    },
+    {
+      "id": "NODE_REMARK_SUCCESS_MSG",
+      "type": "html-template",
+      "text": "Node NODE_REMARK_SUCCESS_MSG",
+      "position": { "x": 3600, "y": -1700 },
+      "data": {
+        "tag": "SendText",
+        "textTagObj": { "headercontent": "", "textContent": "✅ *Remark saved!*\n\n📝 Your note has been added to the contact and synced to your Google Sheet." }
+      }
+    },
+    {
+      "id": "NODE_ASK_SCHEDULE",
+      "type": "html-template",
+      "text": "Node NODE_ASK_SCHEDULE",
+      "position": { "x": 2462, "y": -1200 },
+      "data": {
+        "selectInteractive": {
+          "channel": "whatsapp",
+          "content": {
+            "contentType": "interactive",
+            "interactive": {
+              "subType": "buttons",
+              "components": {
+                "header": { "type": "text", "text": "📅 Schedule a Meeting" },
+                "body": { "type": "text", "text": "Would you like to schedule a meeting with *{{custom.card_name}}*?\n\nTap *Schedule* to pick a date & time via Google Calendar." },
+                "footer": { "type": "text", "text": "Powered by 11za AI" },
+                "buttons": [
+                  { "type": "reply", "reply": { "payload": "btn-schedule-yes", "title": "Schedule Meeting" } },
+                  { "type": "reply", "reply": { "payload": "btn-schedule-no", "title": "Skip" } }
+                ]
+              }
+            }
+          },
+          "documentName": "",
+          "subType": "buttons"
+        },
+        "tag": "AskButton",
+        "storeVariable": "schedule_choice",
+        "storeId": "",
+        "attempt": 1,
+        "interactiveType": "static",
+        "validationerrorMsg": ""
+      }
+    },
+    {
+      "id": "NODE_SEND_SCHEDULE_LINK",
+      "type": "html-template",
+      "text": "Node NODE_SEND_SCHEDULE_LINK",
+      "position": { "x": 3100, "y": -1200 },
+      "data": {
+        "tag": "SendText",
+        "textTagObj": {
+          "headercontent": "",
+          "textContent": "📅 *Schedule Your Meeting!*\n\nClick the link below to pick a date & time. Your meeting will be automatically added to Google Calendar and synced to your Sheet:\n\n🔗 {{custom.schedule_link}}\n\n_Once you schedule, you'll get a WhatsApp confirmation!_ ✅"
+        }
+      }
+    },
+    {
+      "id": "NODE_POST_SCAN_SHEETS_COND",
+      "type": "html-template",
+      "text": "Node NODE_POST_SCAN_SHEETS_COND",
+      "position": { "x": 4200, "y": -1200 },
+      "data": {
+        "tag": "Condition",
+        "operation": "and",
+        "conditionObj": [{ "variable": "{{custom.sheets_ok}}", "operator": "equals", "variableValue": "true" }]
+      }
+    },
+    {
+      "id": "NODE_POST_SCAN_MENU",
+      "type": "html-template",
+      "text": "Node NODE_POST_SCAN_MENU",
+      "position": { "x": 4800, "y": -900 },
+      "data": {
+        "selectInteractive": {
+          "channel": "whatsapp",
+          "content": {
+            "contentType": "interactive",
+            "interactive": {
+              "subType": "buttons",
+              "components": {
+                "header": { "type": "text", "text": "" },
+                "body": { "type": "text", "text": "What would you like to do next?" },
+                "footer": { "type": "text", "text": "" },
+                "buttons": [
+                  { "type": "reply", "reply": { "payload": "btn-scan-another", "title": "Scan Another Card" } }
+                ]
+              }
+            }
+          },
+          "documentName": "",
+          "subType": "buttons"
+        },
+        "tag": "AskButton",
+        "storeVariable": "post_scan_choice",
+        "storeId": "",
+        "attempt": 1,
+        "interactiveType": "static",
+        "validationerrorMsg": ""
+      }
+    },
+    {
+      "id": "NODE_POST_SCAN_MENU_WITH_SHEET",
+      "type": "html-template",
+      "text": "Node NODE_POST_SCAN_MENU_WITH_SHEET",
+      "position": { "x": 4800, "y": -1400 },
+      "data": {
+        "selectInteractive": {
+          "channel": "whatsapp",
+          "content": {
+            "contentType": "interactive",
+            "interactive": {
+              "subType": "buttons",
+              "components": {
+                "header": { "type": "text", "text": "" },
+                "body": { "type": "text", "text": "What would you like to do next?" },
+                "footer": { "type": "text", "text": "" },
+                "buttons": [
+                  { "type": "reply", "reply": { "payload": "btn-scan-another", "title": "Scan Another Card" } },
+                  { "type": "reply", "reply": { "payload": "btn-setup-sheet", "title": "Setup Google Sheet" } }
+                ]
+              }
+            }
+          },
+          "documentName": "",
+          "subType": "buttons"
+        },
+        "tag": "AskButton",
+        "storeVariable": "post_scan_choice",
+        "storeId": "",
+        "attempt": 1,
+        "interactiveType": "static",
+        "validationerrorMsg": ""
+      }
+    },
+    {
+      "id": "NODE_SHEETS_SETUP_API",
+      "type": "html-template",
+      "text": "Node NODE_SHEETS_SETUP_API",
+      "position": { "x": 280, "y": 330 },
+      "data": {
+        "tag": "ApiRequest",
+        "apiData": {
+          "method": "POST",
+          "url": "https://card-scan-sheet-w8yl.vercel.app/api/bot/setup/sheets",
+          "params": [],
+          "headers": [{ "key": "Content-Type", "value": "application/json" }],
+          "urlEncoded": [],
+          "bodyType": "json",
+          "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\"\n}",
+          "bodyRaw": "",
+          "formData": [],
+          "authType": "none",
+          "bearerToken": "",
+          "basicUsername": "",
+          "basicPassword": "",
+          "apiKey": ""
+        },
+        "storeResponseVariable": [{ "variable": "sheets_setup_url", "variableValue": "response.setupUrl" }]
+      }
+    },
+    {
+      "id": "NODE_SHEETS_LINK_MSG",
+      "type": "html-template",
+      "text": "Node NODE_SHEETS_LINK_MSG",
+      "position": { "x": 900, "y": 330 },
+      "data": {
+        "textTagObj": {
+          "headercontent": "",
+          "textContent": "🔗 Click the link below to connect your Google Sheet:\n\n{{custom.sheets_setup_url}}\n\nOnce connected, all future scans will be auto-saved to your sheet ✅\n\nReply *hi* to continue"
+        },
+        "tag": "SendText"
+      }
+    },
+    {
+      "id": "NODE_RESOLVE_1",
+      "type": "html-template",
+      "text": "Node NODE_RESOLVE_1",
+      "position": { "x": -1000, "y": 1200 },
+      "data": { "tag": "ResolveConversation", "resolveConversation": "The conversation will be marked as resolved" }
+    },
+    {
+      "id": "NODE_RESOLVE_2",
+      "type": "html-template",
+      "text": "Node NODE_RESOLVE_2",
+      "position": { "x": 1800, "y": -400 },
+      "data": { "tag": "ResolveConversation", "resolveConversation": "The conversation will be marked as resolved" }
+    },
+    {
+      "id": "NODE_RESOLVE_3",
+      "type": "html-template",
+      "text": "Node NODE_RESOLVE_3",
+      "position": { "x": 1500, "y": 330 },
+      "data": { "tag": "ResolveConversation", "resolveConversation": "The conversation will be marked as resolved" }
+    },
+    {
+      "id": "NODE_RESOLVE_4",
+      "type": "html-template",
+      "text": "Node NODE_RESOLVE_4",
+      "position": { "x": 5600, "y": -1200 },
+      "data": { "tag": "ResolveConversation", "resolveConversation": "The conversation will be marked as resolved" }
+    },
+    {
+      "id": "1",
+      "type": "html-template",
+      "icon": "/images/logo_only.png",
+      "position": { "x": -3992, "y": 8 },
+      "data": {
+        "selectEvent": "inbound_message",
+        "selectedPriority": "1",
+        "rulename": "Card Scanner Bot",
+        "expiryType": true,
+        "expiryDate": "",
+        "closeType": "hours",
+        "closeValue": 240,
+        "expiryMessage": "Session expired. Send *hi* to restart.",
+        "expMsgType": "text",
+        "expiryInteractive": null,
+        "sessionExpMsg": "",
+        "sheet": false,
+        "googleSheetId": "",
+        "googleSheetName": "",
+        "status": false,
+        "botread": false,
+        "isCaseInsensitive": true,
+        "conditions": [
+          {
+            "operator": null,
+            "conditions": [{ "msgType": "message_text", "condition_type": "equals", "value": "hi" }]
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e01",
+      "source": "1", "target": "NODE_CHECK_USER",
+      "sourceHandle": "source-1", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "source-1", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e02",
+      "source": "NODE_CHECK_USER", "target": "NODE_USER_EXISTS_COND",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e03",
+      "source": "NODE_CHECK_USER", "target": "NODE_GET_EMAIL",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e04",
+      "source": "NODE_USER_EXISTS_COND", "target": "NODE_SHEETS_COND",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e05",
+      "source": "NODE_USER_EXISTS_COND", "target": "NODE_GET_EMAIL",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_sheets_cond_true",
+      "source": "NODE_SHEETS_COND", "target": "NODE_WELCOME_BACK_SHEET_DONE",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_sheets_cond_false",
+      "source": "NODE_SHEETS_COND", "target": "NODE_WELCOME_BACK",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e06",
+      "source": "NODE_GET_EMAIL", "target": "NODE_REGISTER_API",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e07",
+      "source": "NODE_REGISTER_API", "target": "NODE_REGISTER_SUCCESS",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e08",
+      "source": "NODE_REGISTER_API", "target": "NODE_REGISTER_FAIL",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e09",
+      "source": "NODE_REGISTER_FAIL", "target": "NODE_RESOLVE_1",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e10",
+      "source": "NODE_REGISTER_SUCCESS", "target": "NODE_WELCOME_BACK",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e11",
+      "source": "NODE_WELCOME_BACK", "target": "NODE_ASK_IMAGE",
+      "sourceHandle": "btn-scan-card::Scan a Business Card", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Scan a Business Card" } } },
+      "data": { "type": "animated", "buttonId": "btn-scan-card", "buttonTitle": "Scan a Business Card" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e11b",
+      "source": "NODE_WELCOME_BACK_SHEET_DONE", "target": "NODE_ASK_IMAGE",
+      "sourceHandle": "btn-scan-card::Scan a Business Card", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Scan a Business Card" } } },
+      "data": { "type": "animated", "buttonId": "btn-scan-card", "buttonTitle": "Scan a Business Card" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e12",
+      "source": "NODE_WELCOME_BACK", "target": "NODE_SHEETS_SETUP_API",
+      "sourceHandle": "btn-setup-sheet::Setup Google Sheet", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Setup Google Sheet" } } },
+      "data": { "type": "animated", "buttonId": "btn-setup-sheet", "buttonTitle": "Setup Google Sheet" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e13",
+      "source": "NODE_ASK_IMAGE", "target": "NODE_SCANNING_MSG",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e14",
+      "source": "NODE_SCANNING_MSG", "target": "NODE_SCAN_API",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e15",
+      "source": "NODE_SCAN_API", "target": "NODE_SCAN_RESULT_MSG",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e16",
+      "source": "NODE_SCAN_API", "target": "NODE_SCAN_ERROR_MSG",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_scan_result_to_remark",
+      "source": "NODE_SCAN_RESULT_MSG", "target": "NODE_ASK_REMARK",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_remark_yes",
+      "source": "NODE_ASK_REMARK", "target": "NODE_GET_REMARK_TEXT",
+      "sourceHandle": "btn-add-remark::Add Remark", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Add Remark" } } },
+      "data": { "type": "animated", "buttonId": "btn-add-remark", "buttonTitle": "Add Remark" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_remark_skip",
+      "source": "NODE_ASK_REMARK", "target": "NODE_ASK_SCHEDULE",
+      "sourceHandle": "btn-skip-remark::Skip", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Skip" } } },
+      "data": { "type": "animated", "buttonId": "btn-skip-remark", "buttonTitle": "Skip" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_get_remark_to_api",
+      "source": "NODE_GET_REMARK_TEXT", "target": "NODE_REMARK_API",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_remark_api_success",
+      "source": "NODE_REMARK_API", "target": "NODE_REMARK_SUCCESS_MSG",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_remark_success_to_schedule",
+      "source": "NODE_REMARK_SUCCESS_MSG", "target": "NODE_ASK_SCHEDULE",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_schedule_yes",
+      "source": "NODE_ASK_SCHEDULE", "target": "NODE_SEND_SCHEDULE_LINK",
+      "sourceHandle": "btn-schedule-yes::Schedule Meeting", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Schedule Meeting" } } },
+      "data": { "type": "animated", "buttonId": "btn-schedule-yes", "buttonTitle": "Schedule Meeting" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_schedule_no",
+      "source": "NODE_ASK_SCHEDULE", "target": "NODE_POST_SCAN_SHEETS_COND",
+      "sourceHandle": "btn-schedule-no::Skip", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Skip" } } },
+      "data": { "type": "animated", "buttonId": "btn-schedule-no", "buttonTitle": "Skip" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_schedule_link_to_resolve",
+      "source": "NODE_SEND_SCHEDULE_LINK", "target": "NODE_POST_SCAN_SHEETS_COND",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_post_scan_cond_true",
+      "source": "NODE_POST_SCAN_SHEETS_COND", "target": "NODE_POST_SCAN_MENU",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_post_scan_cond_false",
+      "source": "NODE_POST_SCAN_SHEETS_COND", "target": "NODE_POST_SCAN_MENU_WITH_SHEET",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e18",
+      "source": "NODE_SCAN_ERROR_MSG", "target": "NODE_RESOLVE_2",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e19",
+      "source": "NODE_POST_SCAN_MENU", "target": "NODE_ASK_IMAGE",
+      "sourceHandle": "btn-scan-another::Scan Another Card", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Scan Another Card" } } },
+      "data": { "type": "animated", "buttonId": "btn-scan-another", "buttonTitle": "Scan Another Card" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e19b",
+      "source": "NODE_POST_SCAN_MENU_WITH_SHEET", "target": "NODE_ASK_IMAGE",
+      "sourceHandle": "btn-scan-another::Scan Another Card", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Scan Another Card" } } },
+      "data": { "type": "animated", "buttonId": "btn-scan-another", "buttonTitle": "Scan Another Card" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e20",
+      "source": "NODE_POST_SCAN_MENU_WITH_SHEET", "target": "NODE_SHEETS_SETUP_API",
+      "sourceHandle": "btn-setup-sheet::Setup Google Sheet", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Setup Google Sheet" } } },
+      "data": { "type": "animated", "buttonId": "btn-setup-sheet", "buttonTitle": "Setup Google Sheet" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_sheets_setup_success",
+      "source": "NODE_SHEETS_SETUP_API", "target": "NODE_SHEETS_LINK_MSG",
+      "sourceHandle": "success::true", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "true" } } },
+      "data": { "type": "animated", "buttonId": "success", "buttonTitle": "true" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_sheets_setup_fail",
+      "source": "NODE_SHEETS_SETUP_API", "target": "NODE_SCAN_ERROR_MSG",
+      "sourceHandle": "fail::false", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "false" } } },
+      "data": { "type": "animated", "buttonId": "fail", "buttonTitle": "false" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e22",
+      "source": "NODE_SHEETS_LINK_MSG", "target": "NODE_RESOLVE_3",
+      "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "Connected" } } },
+      "data": { "type": "animated", "buttonId": "", "buttonTitle": "" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    },
+    {
+      "id": "e_final_menu_resolve",
+      "source": "NODE_POST_SCAN_MENU", "target": "NODE_RESOLVE_4",
+      "sourceHandle": "timeout::timeout", "type": "template", "curve": "bezier",
+      "edgeLabels": { "center": { "type": "html-template", "data": { "type": "text", "text": "timeout" } } },
+      "data": { "type": "animated", "buttonId": "timeout", "buttonTitle": "timeout" },
+      "markers": { "end": { "type": "arrow-closed" } }
+    }
+  ],
+  "createdAt": "2026-03-22T18:12:30.344Z",
+  "updatedAt": "2026-03-25T12:18:00.000Z",
+  "__v": 0,
+  "export": true,
+  "exportTime": 1774440850978,
+  "exportedBy": {
+    "_id": "68d24a8acc11e6efd5eb2a82",
+    "name": "Nirmit Choraria - DIVTECH IT SOLUTION PRIVATE LIMITED NEW"
+  },
+  "variables": [
+    { "key": "card_name", "type": "String", "value": "" },
+    { "key": "card_company", "type": "String", "value": "" },
+    { "key": "card_role", "type": "String", "value": "" },
+    { "key": "card_email", "type": "String", "value": "" },
+    { "key": "card_phone", "type": "String", "value": "" },
+    { "key": "card_website", "type": "String", "value": "" },
+    { "key": "card_address", "type": "String", "value": "" },
+    { "key": "card_linkedin", "type": "String", "value": "" },
+    { "key": "contact_id", "type": "String", "value": "" },
+    { "key": "schedule_link", "type": "String", "value": "" },
+    { "key": "sheets_setup_url", "type": "String", "value": "" },
+    { "key": "user_exists", "type": "String", "value": "" },
+    { "key": "user_name", "type": "String", "value": "" },
+    { "key": "user_email", "type": "String", "value": "" },
+    { "key": "sheets_ok", "type": "Boolean", "value": "" },
+    { "key": "main_choice", "type": "String", "value": "" },
+    { "key": "media_url", "type": "Object", "value": "" },
+    { "key": "remark_choice", "type": "String", "value": "" },
+    { "key": "remark_text", "type": "String", "value": "" },
+    { "key": "remark_saved", "type": "String", "value": "" },
+    { "key": "schedule_choice", "type": "String", "value": "" },
+    { "key": "post_scan_choice", "type": "String", "value": "" }
+  ]
+}

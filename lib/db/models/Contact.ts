@@ -13,6 +13,8 @@ export interface IContact extends Document {
   rawText?: string;
   imageUrl?: string;
   remark?: string;
+  meetingTime?: Date;
+  meetingScheduled?: boolean;
   scannedAt: Date;
 }
 
@@ -29,6 +31,8 @@ const ContactSchema = new Schema<IContact>({
   rawText: { type: String },
   imageUrl: { type: String },
   remark: { type: String },
+  meetingTime: { type: Date },
+  meetingScheduled: { type: Boolean, default: false },
   scannedAt: { type: Date, default: Date.now }
 });
 
