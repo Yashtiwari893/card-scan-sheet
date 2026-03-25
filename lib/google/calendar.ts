@@ -22,28 +22,26 @@ export async function createCalendarEvent(
   const endTime = new Date(startTime.getTime() + 30 * 60000);
 
   const event = {
-    summary: `Meeting with ${contact.name || 'Client'}`,
-    description: `Discussion regarding business card scan. 
+    summary: `Meeting: ${contact.name || 'Client'}`,
+    description: `Discussion regarding business card scan.
+Contact: ${contact.name || 'N/A'}
 Company: ${contact.company || 'N/A'}
 Job Title: ${contact.jobTitle || 'N/A'}
 Email: ${contact.email || 'N/A'}
 Phone: ${contact.phone || 'N/A'}
-Remark: ${contact.remark || 'N/A'}`,
+Remark: ${contact.remark || 'N/A'}
+Scheduled via BizSync AI`,
     start: {
       dateTime: startTime.toISOString(),
-      timeZone: 'Asia/Kolkata', // You can make this dynamic if needed
     },
     end: {
       dateTime: endTime.toISOString(),
-      timeZone: 'Asia/Kolkata',
     },
-    attendees: contact.email ? [{ email: contact.email }] : [],
+    attendees: contact.email && contact.email !== 'N/A' && contact.email.includes('@') 
+      ? [{ email: contact.email }] 
+      : [],
     reminders: {
-      useDefault: false,
-      overrides: [
-        { method: 'email', minutes: 24 * 60 },
-        { method: 'popup', minutes: 30 },
-      ],
+      useDefault: true
     },
   };
 

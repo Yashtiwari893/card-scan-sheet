@@ -28,6 +28,8 @@ export async function POST(req: NextRequest) {
 
     // 1. Create Google Calendar Event
     let calendarEventUrl = '';
+    let calendarError = null;
+    
     if (user.google?.connected && user.google.accessToken && user.google.refreshToken) {
       try {
         const event = await createCalendarEvent(
@@ -38,7 +40,8 @@ export async function POST(req: NextRequest) {
         );
         calendarEventUrl = event.htmlLink || '';
       } catch (calError: any) {
-        console.error("Calendar sync error:", calError.message);
+        console.error("Calendar sync error detail:", calError.response?.data || calError.message);
+        calendarError = calError.response?.data?.error?.message || calError.message;
       }
 
       // 2. Sync to Google Sheet (Column K)
@@ -52,6 +55,15 @@ export async function POST(req: NextRequest) {
       } catch (sheetsError: any) {
         console.error("Sheet sync error:", sheetsError.message);
       }
+    } else {
+      calendarError = "Google account not fully connected or tokens missing.";
+    }
+
+    if (calendarError && !calendarEventUrl) {
+        return NextResponse.json({ 
+            success: false, 
+            error: `Calendar Error: ${calendarError}. Please try reconnecting your Google account.` 
+        }, { status: 500 });
     }
 
     // 3. Update Database
