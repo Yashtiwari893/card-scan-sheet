@@ -1,0 +1,1153 @@
+{
+    "_id": "69c3d851db697c1e02566c9d",
+    "name": "Card Scanner Bot - Optimized",
+    "nodes": [
+        {
+            "id": "NODE_CHECK_USER",
+            "type": "html-template",
+            "text": "Node NODE_CHECK_USER",
+            "position": {
+                "x": -3400,
+                "y": 0
+            },
+            "data": {
+                "tag": "ApiRequest",
+                "apiData": {
+                    "method": "GET",
+                    "url": "https://card-scan-sheet.vercel.app/api/bot/check-user?phone={{recipient.mobileNo_wo_code}}",
+                    "params": [],
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "urlEncoded": [],
+                    "bodyType": "none",
+                    "bodyJson": "{}",
+                    "bodyRaw": "",
+                    "formData": [],
+                    "authType": "none",
+                    "bearerToken": "",
+                    "basicUsername": "",
+                    "basicPassword": "",
+                    "apiKey": ""
+                },
+                "storeResponseVariable": [
+                    {
+                        "variable": "user_exists",
+                        "variableValue": "response.exists"
+                    },
+                    {
+                        "variable": "user_name",
+                        "variableValue": "response.name"
+                    },
+                    {
+                        "variable": "sheets_ok",
+                        "variableValue": "response.sheetsConnected"
+                    },
+                    {
+                        "variable": "calendar_ok",
+                        "variableValue": "response.calendarConnected"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_USER_EXISTS_COND",
+            "type": "html-template",
+            "text": "Node NODE_USER_EXISTS_COND",
+            "position": {
+                "x": -2800,
+                "y": 0
+            },
+            "data": {
+                "tag": "Condition",
+                "operation": "and",
+                "conditionObj": [
+                    {
+                        "variable": "{{custom.user_exists}}",
+                        "operator": "equals",
+                        "variableValue": "true"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_GET_EMAIL",
+            "type": "html-template",
+            "text": "Node NODE_GET_EMAIL",
+            "position": {
+                "x": -2200,
+                "y": 600
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "Welcome! 👋\nPlease share your email to get started."
+                },
+                "storeVariable": "user_email",
+                "tag": "AskText",
+                "attempt": 1,
+                "validationerrorMsg": "Please enter a valid email address.",
+                "validationsetting": false,
+                "aditionalstatus": false,
+                "minvalue": "",
+                "maxvalue": ""
+            }
+        },
+        {
+            "id": "NODE_REGISTER_API",
+            "type": "html-template",
+            "text": "Node NODE_REGISTER_API",
+            "position": {
+                "x": -1600,
+                "y": 600
+            },
+            "data": {
+                "tag": "ApiRequest",
+                "apiData": {
+                    "method": "POST",
+                    "url": "https://card-scan-sheet.vercel.app/api/bot/register",
+                    "params": [],
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "urlEncoded": [],
+                    "bodyType": "json",
+                    "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\",\n  \"email\": \"{{custom.user_email}}\"\n}",
+                    "bodyRaw": "",
+                    "formData": [],
+                    "authType": "none",
+                    "bearerToken": "",
+                    "basicUsername": "",
+                    "basicPassword": "",
+                    "apiKey": ""
+                },
+                "storeResponseVariable": [
+                    {
+                        "variable": "user_name",
+                        "variableValue": "response.name"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_REGISTER_SUCCESS",
+            "type": "html-template",
+            "text": "Node NODE_REGISTER_SUCCESS",
+            "position": {
+                "x": -1000,
+                "y": 600
+            },
+            "data": {
+                "tag": "SendText",
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "✅ You're registered, *{{custom.user_name}}*!\n\nSend a business card photo to start scanning 📸"
+                }
+            }
+        },
+        {
+            "id": "NODE_SHEETS_COND",
+            "type": "html-template",
+            "text": "Node NODE_SHEETS_COND",
+            "position": {
+                "x": -1978,
+                "y": -100
+            },
+            "data": {
+                "tag": "Condition",
+                "operation": "and",
+                "conditionObj": [
+                    {
+                        "variable": "{{custom.sheets_ok}}",
+                        "operator": "equals",
+                        "variableValue": "true"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_WELCOME_BACK_SHEET_DONE",
+            "type": "html-template",
+            "text": "Node NODE_WELCOME_BACK_SHEET_DONE",
+            "position": {
+                "x": -1300,
+                "y": -500
+            },
+            "data": {
+                "selectInteractive": {
+                    "channel": "whatsapp",
+                    "content": {
+                        "contentType": "interactive",
+                        "interactive": {
+                            "subType": "buttons",
+                            "components": {
+                                "header": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "body": {
+                                    "type": "text",
+                                    "text": "Welcome back! 👋\n\nWhat would you like to do?"
+                                },
+                                "footer": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "buttons": [
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-scan-card",
+                                            "title": "Scan a Business Card"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "documentName": "",
+                    "subType": "buttons"
+                },
+                "tag": "AskButton",
+                "storeVariable": "main_choice",
+                "storeId": "",
+                "attempt": 1,
+                "interactiveType": "static",
+                "validationerrorMsg": ""
+            }
+        },
+        {
+            "id": "NODE_WELCOME_BACK",
+            "type": "html-template",
+            "text": "Node NODE_WELCOME_BACK",
+            "position": {
+                "x": -1300,
+                "y": -100
+            },
+            "data": {
+                "selectInteractive": {
+                    "channel": "whatsapp",
+                    "content": {
+                        "contentType": "interactive",
+                        "interactive": {
+                            "subType": "buttons",
+                            "components": {
+                                "header": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "body": {
+                                    "type": "text",
+                                    "text": "Welcome back, *{{custom.user_name}}*! 👋\n\nWhat would you like to do?"
+                                },
+                                "footer": {
+                                    "type": "text",
+                                    "text": "Card Status: Sheet ({{custom.sheets_ok}}), Calendar ({{custom.calendar_ok}})"
+                                },
+                                "buttons": [
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-scan-card",
+                                            "title": "Scan a Business Card"
+                                        }
+                                    },
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-setup-sheet",
+                                            "title": "Setup Google Sheet"
+                                        }
+                                    },
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-setup-calendar",
+                                            "title": "Setup Calendar"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "documentName": "",
+                    "subType": "buttons"
+                },
+                "tag": "AskButton",
+                "storeVariable": "main_choice",
+                "storeId": "",
+                "attempt": 1,
+                "interactiveType": "static",
+                "validationerrorMsg": ""
+            }
+        },
+        {
+            "id": "NODE_ASK_IMAGE",
+            "type": "html-template",
+            "text": "Node NODE_ASK_IMAGE",
+            "position": {
+                "x": -530,
+                "y": -931
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "📸 Please send a clear photo of the business card.\n\nMake sure it's well-lit for better accuracy ✨"
+                },
+                "storeVariable": "media_url",
+                "tag": "AskFile",
+                "attempt": 1,
+                "validationerrorMsg": "",
+                "validationsetting": false
+            }
+        },
+        {
+            "id": "NODE_SCANNING_MSG",
+            "type": "html-template",
+            "text": "Node NODE_SCANNING_MSG",
+            "position": {
+                "x": 200,
+                "y": -1019
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "⏳ Scanning your card...\n\n🤖 AI is reading the details. Please wait a moment..."
+                },
+                "tag": "SendText"
+            }
+        },
+        {
+            "id": "NODE_SCAN_API",
+            "type": "html-template",
+            "text": "Node NODE_SCAN_API",
+            "position": {
+                "x": 800,
+                "y": -800
+            },
+            "data": {
+                "tag": "ApiRequest",
+                "apiData": {
+                    "method": "POST",
+                    "url": "https://card-scan-sheet.vercel.app/api/bot/scan-card",
+                    "params": [],
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "urlEncoded": [],
+                    "bodyType": "json",
+                    "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\",\n  \"imageUrl\": \"{{custom.media_url}}\"\n}",
+                    "bodyRaw": "",
+                    "formData": [],
+                    "authType": "none",
+                    "bearerToken": "",
+                    "basicUsername": "",
+                    "basicPassword": "",
+                    "apiKey": ""
+                },
+                "storeResponseVariable": [
+                    {
+                        "variable": "card_name",
+                        "variableValue": "response.name"
+                    },
+                    {
+                        "variable": "card_company",
+                        "variableValue": "response.company"
+                    },
+                    {
+                        "variable": "card_role",
+                        "variableValue": "response.jobTitle"
+                    },
+                    {
+                        "variable": "card_email",
+                        "variableValue": "response.email"
+                    },
+                    {
+                        "variable": "card_phone",
+                        "variableValue": "response.phone"
+                    },
+                    {
+                        "variable": "card_website",
+                        "variableValue": "response.website"
+                    },
+                    {
+                        "variable": "card_address",
+                        "variableValue": "response.address"
+                    },
+                    {
+                        "variable": "card_linkedin",
+                        "variableValue": "response.linkedin"
+                    },
+                    {
+                        "variable": "contact_id",
+                        "variableValue": "response.contactId"
+                    },
+                    {
+                        "variable": "schedule_link",
+                        "variableValue": "response.scheduleLink"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_SCAN_RESULT_MSG",
+            "type": "html-template",
+            "text": "Node NODE_SCAN_RESULT_MSG",
+            "position": {
+                "x": 1208,
+                "y": -1423
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "✅ *Card Scanned Successfully!*\n\nName: *{{custom.card_name}}*\nCompany: *{{custom.card_company}}*\nDesignation: *{{custom.card_role}}*\nEmail: {{custom.card_email}}\nPhone: *{{custom.card_phone}}*\nWebsite: {{custom.card_website}}\nAddress: {{custom.card_address}}\nLinkedIn: {{custom.card_linkedin}}"
+                },
+                "tag": "SendText"
+            }
+        },
+        {
+            "id": "NODE_ASK_REMARK",
+            "type": "html-template",
+            "text": "Node NODE_ASK_REMARK",
+            "position": {
+                "x": 1921,
+                "y": -1486
+            },
+            "data": {
+                "selectInteractive": {
+                    "channel": "whatsapp",
+                    "content": {
+                        "contentType": "interactive",
+                        "interactive": {
+                            "subType": "buttons",
+                            "components": {
+                                "header": {
+                                    "type": "text",
+                                    "text": "🤖 11za AI - Add Remark"
+                                },
+                                "body": {
+                                    "type": "text",
+                                    "text": "📝 Would you like to add a remark for *{{custom.card_name}}*?\n\nYou can type a note or send a 🎙️ voice note.\n\nOr tap *Skip* to continue."
+                                },
+                                "footer": {
+                                    "type": "text",
+                                    "text": "Powered by 11za AI"
+                                },
+                                "buttons": [
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-add-remark",
+                                            "title": "Add Remark"
+                                        }
+                                    },
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-skip-remark",
+                                            "title": "Skip"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "documentName": "",
+                    "subType": "buttons"
+                },
+                "tag": "AskButton",
+                "storeVariable": "remark_choice",
+                "storeId": "",
+                "attempt": 1,
+                "interactiveType": "static",
+                "validationerrorMsg": ""
+            }
+        },
+        {
+            "id": "NODE_GET_REMARK_TEXT",
+            "type": "html-template",
+            "text": "Node NODE_GET_REMARK_TEXT",
+            "position": {
+                "x": 2421,
+                "y": -1700
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "🎙️ Please send your remark as a *voice note* or type it as a *text message*.\n\n_11za AI will save it for you!_ 🤖"
+                },
+                "storeVariable": "remark_text",
+                "tag": "AskText",
+                "attempt": 1,
+                "validationerrorMsg": "",
+                "validationsetting": false,
+                "aditionalstatus": false,
+                "minvalue": "",
+                "maxvalue": ""
+            }
+        },
+        {
+            "id": "NODE_REMARK_API",
+            "type": "html-template",
+            "text": "Node NODE_REMARK_API",
+            "position": {
+                "x": 3000,
+                "y": -1700
+            },
+            "data": {
+                "tag": "ApiRequest",
+                "apiData": {
+                    "method": "POST",
+                    "url": "https://card-scan-sheet.vercel.app/api/bot/add-remark",
+                    "params": [],
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "urlEncoded": [],
+                    "bodyType": "json",
+                    "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\",\n  \"contactId\": \"{{custom.contact_id}}\",\n  \"remarkText\": \"{{custom.remark_text}}\",\n  \"audioUrl\": \"{{custom.remark_text}}\"\n}",
+                    "bodyRaw": "",
+                    "formData": [],
+                    "authType": "none",
+                    "bearerToken": "",
+                    "basicUsername": "",
+                    "basicPassword": "",
+                    "apiKey": ""
+                },
+                "storeResponseVariable": [
+                    {
+                        "variable": "remark_saved",
+                        "variableValue": "response.success"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_REMARK_SUCCESS_MSG",
+            "type": "html-template",
+            "text": "Node NODE_REMARK_SUCCESS_MSG",
+            "position": {
+                "x": 3600,
+                "y": -1700
+            },
+            "data": {
+                "tag": "SendText",
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "✅ *Remark saved!*\n\n📝 Your note has been added to the contact and synced to your Google Sheet."
+                }
+            }
+        },
+        {
+            "id": "NODE_ASK_SCHEDULE",
+            "type": "html-template",
+            "text": "Node NODE_ASK_SCHEDULE",
+            "position": {
+                "x": 2462,
+                "y": -1200
+            },
+            "data": {
+                "selectInteractive": {
+                    "channel": "whatsapp",
+                    "content": {
+                        "contentType": "interactive",
+                        "interactive": {
+                            "subType": "buttons",
+                            "components": {
+                                "header": {
+                                    "type": "text",
+                                    "text": "📅 Schedule a Meeting"
+                                },
+                                "body": {
+                                    "type": "text",
+                                    "text": "Would you like to schedule a meeting with *{{custom.card_name}}*?\n\nTap *Schedule* to pick a date & time via Google Calendar."
+                                },
+                                "footer": {
+                                    "type": "text",
+                                    "text": "Powered by 11za AI"
+                                },
+                                "buttons": [
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-schedule-yes",
+                                            "title": "Schedule Meeting"
+                                        }
+                                    },
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-schedule-no",
+                                            "title": "Skip"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "documentName": "",
+                    "subType": "buttons"
+                },
+                "tag": "AskButton",
+                "storeVariable": "schedule_choice",
+                "storeId": "",
+                "attempt": 1,
+                "interactiveType": "static",
+                "validationerrorMsg": ""
+            }
+        },
+        {
+            "id": "NODE_CHECK_SCHED_LINK_COND",
+            "type": "html-template",
+            "text": "Check Schedule Link",
+            "position": {
+                "x": 2900,
+                "y": -1400
+            },
+            "data": {
+                "tag": "Condition",
+                "operation": "and",
+                "conditionObj": [
+                    {
+                        "variable": "{{custom.schedule_link}}",
+                        "operator": "not_equals",
+                        "variableValue": ""
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_SEND_SCHEDULE_LINK",
+            "type": "html-template",
+            "text": "Node NODE_SEND_SCHEDULE_LINK",
+            "position": {
+                "x": 3400,
+                "y": -1200
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "📅 *Schedule Your Meeting!*\n\nClick the link below to pick a date & time. Your meeting will be automatically added to Google Calendar:\n\n🔗 {{custom.schedule_link}}\n\n_Once you schedule, you'll get a WhatsApp confirmation!_ ✅"
+                },
+                "tag": "SendText"
+            }
+        },
+        {
+            "id": "NODE_NO_SCHED_LINK_MSG",
+            "type": "html-template",
+            "text": "No Schedule Link",
+            "position": {
+                "x": 3400,
+                "y": -1500
+            },
+            "data": {
+                "tag": "SendText",
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "⚠️ *Calendar not connected!*\n\nPlease connect your Google Calendar from the dashboard to enable scheduling.\n\nReply *hi* to return to main menu."
+                }
+            }
+        },
+        {
+            "id": "NODE_POST_SCAN_SHEETS_COND",
+            "type": "html-template",
+            "text": "Node NODE_POST_SCAN_SHEETS_COND",
+            "position": {
+                "x": 4200,
+                "y": -1200
+            },
+            "data": {
+                "tag": "Condition",
+                "operation": "and",
+                "conditionObj": [
+                    {
+                        "variable": "{{custom.sheets_ok}}",
+                        "operator": "equals",
+                        "variableValue": "true"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_POST_SCAN_MENU",
+            "type": "html-template",
+            "text": "Node NODE_POST_SCAN_MENU",
+            "position": {
+                "x": 4800,
+                "y": -900
+            },
+            "data": {
+                "selectInteractive": {
+                    "channel": "whatsapp",
+                    "content": {
+                        "contentType": "interactive",
+                        "interactive": {
+                            "subType": "buttons",
+                            "components": {
+                                "header": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "body": {
+                                    "type": "text",
+                                    "text": "What would you like to do next?"
+                                },
+                                "footer": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "buttons": [
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-scan-another",
+                                            "title": "Scan Another Card"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "documentName": "",
+                    "subType": "buttons"
+                },
+                "tag": "AskButton",
+                "storeVariable": "post_scan_choice",
+                "storeId": "",
+                "attempt": 1,
+                "interactiveType": "static",
+                "validationerrorMsg": ""
+            }
+        },
+        {
+            "id": "NODE_POST_SCAN_MENU_WITH_SHEET",
+            "type": "html-template",
+            "text": "Node NODE_POST_SCAN_MENU_WITH_SHEET",
+            "position": {
+                "x": 4800,
+                "y": -1400
+            },
+            "data": {
+                "selectInteractive": {
+                    "channel": "whatsapp",
+                    "content": {
+                        "contentType": "interactive",
+                        "interactive": {
+                            "subType": "buttons",
+                            "components": {
+                                "header": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "body": {
+                                    "type": "text",
+                                    "text": "Card saved! ✅\n\nSheet: {{custom.sheets_ok}}\nCalendar: {{custom.calendar_ok}}\n\nWhat would you like to do next?"
+                                },
+                                "footer": {
+                                    "type": "text",
+                                    "text": ""
+                                },
+                                "buttons": [
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-scan-another",
+                                            "title": "Scan Another Card"
+                                        }
+                                    },
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-setup-sheet",
+                                            "title": "Setup Google Sheet"
+                                        }
+                                    },
+                                    {
+                                        "type": "reply",
+                                        "reply": {
+                                            "payload": "btn-setup-calendar",
+                                            "title": "Setup Calendar"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "documentName": "",
+                    "subType": "buttons"
+                },
+                "tag": "AskButton",
+                "storeVariable": "post_scan_choice",
+                "storeId": "",
+                "attempt": 1,
+                "interactiveType": "static",
+                "validationerrorMsg": ""
+            }
+        },
+        {
+            "id": "NODE_SHEETS_SETUP_API",
+            "type": "html-template",
+            "text": "Node NODE_SHEETS_SETUP_API",
+            "position": {
+                "x": 280,
+                "y": 330
+            },
+            "data": {
+                "tag": "ApiRequest",
+                "apiData": {
+                    "method": "POST",
+                    "url": "https://card-scan-sheet.vercel.app/api/bot/setup/sheets",
+                    "params": [],
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "urlEncoded": [],
+                    "bodyType": "json",
+                    "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\"\n}",
+                    "bodyRaw": "",
+                    "formData": [],
+                    "authType": "none",
+                    "bearerToken": "",
+                    "basicUsername": "",
+                    "basicPassword": "",
+                    "apiKey": ""
+                },
+                "storeResponseVariable": [
+                    {
+                        "variable": "sheets_setup_url",
+                        "variableValue": "response.setupUrl"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_SHEETS_LINK_MSG",
+            "type": "html-template",
+            "text": "Node NODE_SHEETS_LINK_MSG",
+            "position": {
+                "x": 900,
+                "y": 330
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "🔗 Click the link below to connect your Google Sheet:\n\n{{custom.sheets_setup_url}}\n\nOnce connected, all future scans will be auto-saved to your sheet ✅\n\nReply *hi* to continue"
+                },
+                "tag": "SendText"
+            }
+        },
+        {
+            "id": "NODE_CALENDAR_SETUP_API",
+            "type": "html-template",
+            "text": "Node NODE_CALENDAR_SETUP_API",
+            "position": {
+                "x": 280,
+                "y": 600
+            },
+            "data": {
+                "tag": "ApiRequest",
+                "apiData": {
+                    "method": "POST",
+                    "url": "https://card-scan-sheet.vercel.app/api/bot/setup/calendar",
+                    "params": [],
+                    "headers": [
+                        {
+                            "key": "Content-Type",
+                            "value": "application/json"
+                        }
+                    ],
+                    "urlEncoded": [],
+                    "bodyType": "json",
+                    "bodyJson": "{\n  \"phone\": \"{{recipient.mobileNo_wo_code}}\"\n}",
+                    "bodyRaw": "",
+                    "formData": [],
+                    "authType": "none",
+                    "bearerToken": "",
+                    "basicUsername": "",
+                    "basicPassword": "",
+                    "apiKey": ""
+                },
+                "storeResponseVariable": [
+                    {
+                        "variable": "calendar_setup_url",
+                        "variableValue": "response.setupUrl"
+                    }
+                ]
+            }
+        },
+        {
+            "id": "NODE_CALENDAR_SETUP_MSG",
+            "type": "html-template",
+            "text": "Node NODE_CALENDAR_SETUP_MSG",
+            "position": {
+                "x": 900,
+                "y": 600
+            },
+            "data": {
+                "textTagObj": {
+                    "headercontent": "",
+                    "textContent": "📅 Click the link below to connect your Google Calendar:\n\n{{custom.calendar_setup_url}}\n\nOnce connected, you can schedule meetings directly from WhatsApp ✅\n\nReply *hi* to continue"
+                },
+                "tag": "SendText"
+            }
+        },
+        {
+            "id": "1",
+            "type": "html-template",
+            "icon": "/images/logo_only.png",
+            "position": {
+                "x": -4000,
+                "y": 0
+            },
+            "data": {
+                "rulename": "Card Scanner Bot",
+                "conditions": [
+                    {
+                        "conditions": [
+                            {
+                                "msgType": "message_text",
+                                "condition_type": "equals",
+                                "value": "hi"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "e01",
+            "source": "1",
+            "target": "NODE_CHECK_USER"
+        },
+        {
+            "id": "e02",
+            "source": "NODE_CHECK_USER",
+            "target": "NODE_USER_EXISTS_COND",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e03",
+            "source": "NODE_CHECK_USER",
+            "target": "NODE_GET_EMAIL",
+            "sourceHandle": "fail::false"
+        },
+        {
+            "id": "e04",
+            "source": "NODE_USER_EXISTS_COND",
+            "target": "NODE_SHEETS_COND",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e05",
+            "source": "NODE_USER_EXISTS_COND",
+            "target": "NODE_GET_EMAIL",
+            "sourceHandle": "fail::false"
+        },
+        {
+            "id": "e_sheets_true",
+            "source": "NODE_SHEETS_COND",
+            "target": "NODE_WELCOME_BACK_SHEET_DONE",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e_sheets_false",
+            "source": "NODE_SHEETS_COND",
+            "target": "NODE_WELCOME_BACK",
+            "sourceHandle": "fail::false"
+        },
+        {
+            "id": "e06",
+            "source": "NODE_GET_EMAIL",
+            "target": "NODE_REGISTER_API"
+        },
+        {
+            "id": "e07",
+            "source": "NODE_REGISTER_API",
+            "target": "NODE_REGISTER_SUCCESS",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e10",
+            "source": "NODE_REGISTER_SUCCESS",
+            "target": "NODE_WELCOME_BACK"
+        },
+        {
+            "id": "e11",
+            "source": "NODE_WELCOME_BACK",
+            "target": "NODE_ASK_IMAGE",
+            "sourceHandle": "btn-scan-card::Scan a Business Card"
+        },
+        {
+            "id": "e11b",
+            "source": "NODE_WELCOME_BACK_SHEET_DONE",
+            "target": "NODE_ASK_IMAGE",
+            "sourceHandle": "btn-scan-card::Scan a Business Card"
+        },
+        {
+            "id": "e12",
+            "source": "NODE_WELCOME_BACK",
+            "target": "NODE_SHEETS_SETUP_API",
+            "sourceHandle": "btn-setup-sheet::Setup Google Sheet"
+        },
+        {
+            "id": "e_to_calendar_api",
+            "source": "NODE_WELCOME_BACK",
+            "target": "NODE_CALENDAR_SETUP_API",
+            "sourceHandle": "btn-setup-calendar::Setup Calendar"
+        },
+        {
+            "id": "e_calendar_msg",
+            "source": "NODE_CALENDAR_SETUP_API",
+            "target": "NODE_CALENDAR_SETUP_MSG",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e13",
+            "source": "NODE_ASK_IMAGE",
+            "target": "NODE_SCANNING_MSG"
+        },
+        {
+            "id": "e14",
+            "source": "NODE_SCANNING_MSG",
+            "target": "NODE_SCAN_API"
+        },
+        {
+            "id": "e15",
+            "source": "NODE_SCAN_API",
+            "target": "NODE_SCAN_RESULT_MSG",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e_to_remark",
+            "source": "NODE_SCAN_RESULT_MSG",
+            "target": "NODE_ASK_REMARK"
+        },
+        {
+            "id": "e_remark_yes",
+            "source": "NODE_ASK_REMARK",
+            "target": "NODE_GET_REMARK_TEXT",
+            "sourceHandle": "btn-add-remark::Add Remark"
+        },
+        {
+            "id": "e_remark_skip",
+            "source": "NODE_ASK_REMARK",
+            "target": "NODE_ASK_SCHEDULE",
+            "sourceHandle": "btn-skip-remark::Skip"
+        },
+        {
+            "id": "e_remark_to_api",
+            "source": "NODE_GET_REMARK_TEXT",
+            "target": "NODE_REMARK_API"
+        },
+        {
+            "id": "e_remark_api_ok",
+            "source": "NODE_REMARK_API",
+            "target": "NODE_REMARK_SUCCESS_MSG",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e_remark_api_fail",
+            "source": "NODE_REMARK_API",
+            "target": "NODE_ASK_SCHEDULE",
+            "sourceHandle": "fail::false"
+        },
+        {
+            "id": "e_to_sched",
+            "source": "NODE_REMARK_SUCCESS_MSG",
+            "target": "NODE_ASK_SCHEDULE"
+        },
+        {
+            "id": "e_sched_yes",
+            "source": "NODE_ASK_SCHEDULE",
+            "target": "NODE_CHECK_SCHED_LINK_COND",
+            "sourceHandle": "btn-schedule-yes::Schedule Meeting"
+        },
+        {
+            "id": "e_sched_no",
+            "source": "NODE_ASK_SCHEDULE",
+            "target": "NODE_POST_SCAN_SHEETS_COND",
+            "sourceHandle": "btn-schedule-no::Skip"
+        },
+        {
+            "id": "e_check_sched_ok",
+            "source": "NODE_CHECK_SCHED_LINK_COND",
+            "target": "NODE_SEND_SCHEDULE_LINK",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e_check_sched_fail",
+            "source": "NODE_CHECK_SCHED_LINK_COND",
+            "target": "NODE_NO_SCHED_LINK_MSG",
+            "sourceHandle": "fail::false"
+        },
+        {
+            "id": "e_final",
+            "source": "NODE_SEND_SCHEDULE_LINK",
+            "target": "NODE_POST_SCAN_SHEETS_COND"
+        },
+        {
+            "id": "e_final_fail",
+            "source": "NODE_NO_SCHED_LINK_MSG",
+            "target": "NODE_POST_SCAN_SHEETS_COND"
+        },
+        {
+            "id": "e_ps_true",
+            "source": "NODE_POST_SCAN_SHEETS_COND",
+            "target": "NODE_POST_SCAN_MENU",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e_ps_false",
+            "source": "NODE_POST_SCAN_SHEETS_COND",
+            "target": "NODE_POST_SCAN_MENU_WITH_SHEET",
+            "sourceHandle": "fail::false"
+        },
+        {
+            "id": "e_loop1",
+            "source": "NODE_POST_SCAN_MENU",
+            "target": "NODE_ASK_IMAGE",
+            "sourceHandle": "btn-scan-another::Scan Another Card"
+        },
+        {
+            "id": "e_loop2",
+            "source": "NODE_POST_SCAN_MENU_WITH_SHEET",
+            "target": "NODE_ASK_IMAGE",
+            "sourceHandle": "btn-scan-another::Scan Another Card"
+        },
+        {
+            "id": "e_to_sheet_api",
+            "source": "NODE_POST_SCAN_MENU_WITH_SHEET",
+            "target": "NODE_SHEETS_SETUP_API",
+            "sourceHandle": "btn-setup-sheet::Setup Google Sheet"
+        },
+        {
+            "id": "e_sheet_link",
+            "source": "NODE_SHEETS_SETUP_API",
+            "target": "NODE_SHEETS_LINK_MSG",
+            "sourceHandle": "success::true"
+        },
+        {
+            "id": "e_ps_to_calendar",
+            "source": "NODE_POST_SCAN_MENU_WITH_SHEET",
+            "target": "NODE_CALENDAR_SETUP_API",
+            "sourceHandle": "btn-setup-calendar::Setup Calendar"
+        }
+    ]
+}

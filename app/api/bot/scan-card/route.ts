@@ -33,18 +33,20 @@ export async function POST(req: NextRequest) {
     });
 
     // Auto-sync to Google Sheet if connected
-    if (user.google?.connected && user.google.sheetId && user.google.accessToken && user.google.refreshToken) {
+    if (user.googleSheets?.connected && user.googleSheets.sheetId && user.googleSheets.accessToken && user.googleSheets.refreshToken) {
       try {
         await appendCardToSheet(
-          user.google.sheetId,
-          user.google.accessToken,
-          user.google.refreshToken,
+          user.googleSheets.sheetId,
+          user.googleSheets.accessToken,
+          user.googleSheets.refreshToken,
           contact
         );
       } catch (sheetsError: any) {
         console.error("Auto-sync background error:", sheetsError.message);
       }
     }
+
+    const calendarOk = user.googleCalendar?.connected ? "true" : "false";
 
     return NextResponse.json({
       success: true,
@@ -57,6 +59,7 @@ export async function POST(req: NextRequest) {
       website: contactData.website || '',
       address: contactData.address || '',
       linkedin: contactData.linkedin || '',
+      calendarOk,
       scheduleLink: `${process.env.NEXT_PUBLIC_APP_URL || ''}/schedule/${contact._id}`
     });
 

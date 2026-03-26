@@ -15,15 +15,20 @@ export async function GET(req: NextRequest) {
     const user = await User.findOne({ waPhone: phone });
 
     if (!user) {
-      return NextResponse.json({ exists: false });
+      console.log(`[Check User] NOT FOUND: ${phone}`);
+      return NextResponse.json({ exists: "false" });
     }
 
+    console.log(`[Check User] FOUND: ${phone}, Name: ${user.name}`);
+
     return NextResponse.json({
-      exists: true,
-      name: user.name || '',
-      sheetsConnected: user.google?.connected || false
+      exists: "true",
+      name: user.name || 'User',
+      sheetsConnected: user.googleSheets?.connected ? "true" : "false",
+      calendarConnected: user.googleCalendar?.connected ? "true" : "false"
     });
   } catch (error: any) {
-    return NextResponse.json({ exists: false, error: error.message }, { status: 500 });
+    console.error("[Check User Error]", error.message);
+    return NextResponse.json({ exists: "false", error: error.message }, { status: 500 });
   }
 }

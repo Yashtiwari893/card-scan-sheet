@@ -30,11 +30,11 @@ export async function POST(req: NextRequest) {
     let calendarEventUrl = '';
     let calendarError = null;
     
-    if (user.google?.connected && user.google.accessToken && user.google.refreshToken) {
+    if (user.googleCalendar?.connected && user.googleCalendar.accessToken && user.googleCalendar.refreshToken) {
       try {
         const event = await createCalendarEvent(
-          user.google.accessToken,
-          user.google.refreshToken,
+          user.googleCalendar.accessToken,
+          user.googleCalendar.refreshToken,
           contact,
           meetingDate
         );
@@ -43,20 +43,22 @@ export async function POST(req: NextRequest) {
         console.error("Calendar sync error detail:", calError.response?.data || calError.message);
         calendarError = calError.response?.data?.error?.message || calError.message;
       }
-
-      // 2. Sync to Google Sheet (Column K)
-      try {
-        await updateCardMeetingInSheet(
-          user.google.sheetId!,
-          user.google.accessToken,
-          user.google.refreshToken,
-          meetingDate.toLocaleString('en-IN')
-        );
-      } catch (sheetsError: any) {
-        console.error("Sheet sync error:", sheetsError.message);
-      }
     } else {
-      calendarError = "Google account not fully connected or tokens missing.";
+      calendarError = "Google Calendar not connected or tokens missing.";
+    }
+
+    // 2. Sync to Google Sheet (Column K) if possible
+    if (user.googleSheets?.connected && user.googleSheets.sheetId && user.googleSheets.accessToken) {
+       try {
+         await updateCardMeetingInSheet(
+           user.googleSheets.sheetId,
+           user.googleSheets.accessToken,
+           user.googleSheets.refreshToken || '',
+           meetingDate.toLocaleString('en-IN')
+         );
+       } catch (sheetsError: any) {
+         console.error("Sheet sync error:", sheetsError.message);
+       }
     }
 
     if (calendarError && !calendarEventUrl) {
