@@ -20,7 +20,7 @@ If a field is not found, leave it as empty string.`;
 // --- PROVIDER 1: Groq ---
 async function extractWithGroq(imageUrl: string) {
   const response = await groq.chat.completions.create({
-    model: 'meta-llama/llama-3.2-90b-vision-preview', // User might have used a placeholder but 90b is good for vision
+    model: 'meta-llama/llama-4-scout-17b-16e-instruct', // Updated: llama-3.2-90b deprecated
     messages: [
       {
         role: 'user',
@@ -59,7 +59,7 @@ async function extractWithMistral(imageUrl: string) {
 async function extractWithGemini(imageUrl: string) {
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }); // Updated: gemini-1.5-flash deprecated
 
   const imageResp = await fetch(imageUrl);
   const buffer = await imageResp.arrayBuffer();

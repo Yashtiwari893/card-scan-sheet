@@ -9,8 +9,8 @@ export async function POST(req: NextRequest) {
   try {
     const { phone, imageUrl } = await req.json();
 
-    if (!phone || !imageUrl) {
-      return NextResponse.json({ error: 'Phone and imageUrl are required' }, { status: 400 });
+    if (!phone || !imageUrl || imageUrl === 'undefined' || imageUrl === 'null' || !imageUrl.startsWith('http')) {
+      return NextResponse.json({ error: 'Phone and a valid imageUrl are required' }, { status: 400 });
     }
 
     await dbConnect();
@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
           user.googleSheets.sheetId,
           user.googleSheets.accessToken,
           user.googleSheets.refreshToken,
-          contact
+          contact,
+          user.timezone || 'Asia/Kolkata'
         );
       } catch (sheetsError: any) {
         console.error("Auto-sync background error:", sheetsError.message);
