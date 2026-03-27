@@ -7,7 +7,8 @@ export async function createCalendarEvent(
   accessToken: string,
   refreshToken: string,
   contact: any,
-  meetingTime: Date
+  meetingTime: Date,
+  timezone: string = 'Asia/Kolkata'
 ) {
   const auth = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -33,9 +34,11 @@ Remark: ${contact.remark || 'N/A'}
 Scheduled via 11za Ai`,
     start: {
       dateTime: startTime.toISOString(),
+      timeZone: timezone, // User ka local timezone — Google Calendar isi se sahi time dikhata hai
     },
     end: {
       dateTime: endTime.toISOString(),
+      timeZone: timezone,
     },
     attendees: contact.email && contact.email !== 'N/A' && contact.email.includes('@')
       ? [{ email: contact.email }]

@@ -30,13 +30,16 @@ export async function POST(req: NextRequest) {
     let calendarEventUrl = '';
     let calendarError = null;
     
+    const userTimezone = user.timezone || 'Asia/Kolkata';
+
     if (user.googleCalendar?.connected && user.googleCalendar.accessToken && user.googleCalendar.refreshToken) {
       try {
         const event = await createCalendarEvent(
           user.googleCalendar.accessToken,
           user.googleCalendar.refreshToken,
           contact,
-          meetingDate
+          meetingDate,
+          userTimezone  // User ka local timezone pass kar rahe hain
         );
         calendarEventUrl = event.htmlLink || '';
       } catch (calError: any) {
@@ -85,7 +88,7 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             phoneNumber: user.waPhone,
-            message: `🗓️ *Meeting Scheduled!*\n\n🤝 *Client:* ${contact.name || 'N/A'}\n🏢 *Company:* ${contact.company || 'N/A'}\n📅 *Date:* ${meetingDate.toLocaleDateString('en-IN')}\n⏰ *Time:* ${meetingDate.toLocaleTimeString('en-IN')}\n\n✅ Google Calendar event created successfully.`
+            message: `🗓️ *Meeting Scheduled!*\n\n🤝 *Client:* ${contact.name || 'N/A'}\n🏢 *Company:* ${contact.company || 'N/A'}\n📅 *Date:* ${meetingDate.toLocaleDateString('en-IN', { timeZone: userTimezone, dateStyle: 'full' })}\n⏰ *Time:* ${meetingDate.toLocaleTimeString('en-IN', { timeZone: userTimezone, timeStyle: 'short' })}\n\n✅ Google Calendar event created successfully.`
           })
         });
       } catch (waError: any) {
