@@ -52,12 +52,12 @@ export async function POST(req: NextRequest) {
     console.log('Remark saved to DB:', finalRemark);
 
     // 4. Sync to Google Sheet
-    if (user.google?.connected && user.google.sheetId && user.google.accessToken && user.google.refreshToken) {
+    if (user.googleSheets?.connected && user.googleSheets.sheetId && user.googleSheets.accessToken && user.googleSheets.refreshToken) {
       try {
         await updateCardRemarkInSheet(
-          user.google.sheetId,
-          user.google.accessToken,
-          user.google.refreshToken,
+          user.googleSheets.sheetId,
+          user.googleSheets.accessToken,
+          user.googleSheets.refreshToken,
           finalRemark
         );
         console.log('Remark synced to Google Sheet');

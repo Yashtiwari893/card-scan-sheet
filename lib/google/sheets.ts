@@ -55,7 +55,7 @@ export async function createScanSheet(accessToken: string, refreshToken: string)
   return spreadsheetId;
 }
 
-export async function appendCardToSheet(spreadsheetId: string, accessToken: string, refreshToken: string, contact: any) {
+export async function appendCardToSheet(spreadsheetId: string, accessToken: string, refreshToken: string, contact: any, timezone: string = 'Asia/Kolkata') {
   const auth = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
@@ -63,6 +63,19 @@ export async function appendCardToSheet(spreadsheetId: string, accessToken: stri
   auth.setCredentials({ access_token: accessToken, refresh_token: refreshToken });
 
   const sheets = google.sheets({ version: 'v4', auth });
+
+  // Timezone-aware time format
+  const scannedDate = contact.scannedAt ? new Date(contact.scannedAt) : new Date();
+  const localTime = new Intl.DateTimeFormat('en-GB', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(scannedDate);
 
   const values = [[
     contact.name || '',
@@ -73,7 +86,7 @@ export async function appendCardToSheet(spreadsheetId: string, accessToken: stri
     contact.website || '',
     contact.address || '',
     contact.linkedin || '',
-    contact.scannedAt ? new Date(contact.scannedAt).toISOString() : new Date().toISOString(),
+    localTime, // e.g. "27/03/2026, 18:05:00" in user's timezone
     '' // Remarks (Column J) left empty for now
   ]];
 

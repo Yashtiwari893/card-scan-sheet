@@ -4,6 +4,7 @@ export interface IUser extends Document {
   waPhone: string;
   name?: string;
   email?: string;
+  timezone?: string;
   googleSheets?: {
     accessToken?: string;
     refreshToken?: string;
@@ -22,6 +23,7 @@ const UserSchema = new Schema<IUser>({
   waPhone: { type: String, required: true, unique: true },
   name: { type: String },
   email: { type: String },
+  timezone: { type: String, default: 'Asia/Kolkata' },
   googleSheets: {
     accessToken: { type: String },
     refreshToken: { type: String },

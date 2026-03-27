@@ -4,9 +4,9 @@ import { google } from 'googleapis';
  * Creates a Google Calendar event.
  */
 export async function createCalendarEvent(
-  accessToken: string, 
-  refreshToken: string, 
-  contact: any, 
+  accessToken: string,
+  refreshToken: string,
+  contact: any,
   meetingTime: Date
 ) {
   const auth = new google.auth.OAuth2(
@@ -30,15 +30,15 @@ Job Title: ${contact.jobTitle || 'N/A'}
 Email: ${contact.email || 'N/A'}
 Phone: ${contact.phone || 'N/A'}
 Remark: ${contact.remark || 'N/A'}
-Scheduled via BizSync AI`,
+Scheduled via 11za Ai`,
     start: {
       dateTime: startTime.toISOString(),
     },
     end: {
       dateTime: endTime.toISOString(),
     },
-    attendees: contact.email && contact.email !== 'N/A' && contact.email.includes('@') 
-      ? [{ email: contact.email }] 
+    attendees: contact.email && contact.email !== 'N/A' && contact.email.includes('@')
+      ? [{ email: contact.email }]
       : [],
     reminders: {
       useDefault: true

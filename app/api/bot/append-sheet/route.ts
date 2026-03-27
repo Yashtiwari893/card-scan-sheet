@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     await dbConnect();
     const user = await User.findOne({ waPhone: phone });
 
-    if (!user || !user.google?.connected || !user.google.sheetId) {
+    if (!user || !user.googleSheets?.connected || !user.googleSheets.sheetId) {
       return NextResponse.json({ success: false, error: 'Sheet not connected for this user' }, { status: 400 });
     }
 
@@ -26,10 +26,11 @@ export async function POST(req: NextRequest) {
 
     // Append to sheet using stored tokens
     await appendCardToSheet(
-      user.google.sheetId,
-      user.google.accessToken!,
-      user.google.refreshToken!,
-      contact
+      user.googleSheets.sheetId,
+      user.googleSheets.accessToken!,
+      user.googleSheets.refreshToken!,
+      contact,
+      user.timezone || 'Asia/Kolkata'
     );
 
     return NextResponse.json({ success: true });
