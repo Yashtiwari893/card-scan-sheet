@@ -19,8 +19,9 @@ If a field is not found, leave it as empty string.`;
 
 // --- PROVIDER 1: Groq ---
 async function extractWithGroq(imageUrl: string) {
+  // Using 11b-vision for faster and more reliable extraction (90b name sometimes varies or needs more credit)
   const response = await groq.chat.completions.create({
-    model: 'meta-llama/llama-4-scout-17b-16e-instruct', // Updated: llama-3.2-90b deprecated
+    model: 'llama-3.2-11b-vision-preview', 
     messages: [
       {
         role: 'user',
@@ -57,18 +58,23 @@ async function extractWithMistral(imageUrl: string) {
 
 // --- PROVIDER 3: Gemini (fallback) ---
 async function extractWithGemini(imageUrl: string) {
+  if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY is missing');
+  
   const { GoogleGenerativeAI } = await import('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }); // Updated: gemini-1.5-flash deprecated
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  // Using gemini-1.5-flash-latest to ensure we get the latest stable version
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const imageResp = await fetch(imageUrl);
+  if (!imageResp.ok) throw new Error(`Failed to fetch image: ${imageResp.statusText}`);
+  
   const buffer = await imageResp.arrayBuffer();
   const base64 = Buffer.from(buffer).toString('base64');
   const mimeType = imageResp.headers.get('content-type') ?? 'image/jpeg';
 
   const result = await model.generateContent([
     { inlineData: { data: base64, mimeType } },
-    PROMPT
+    { text: PROMPT }
   ]);
   const text = result.response.text();
   return JSON.parse(text.replace(/```json|```/g, '').trim());
@@ -76,31 +82,35 @@ async function extractWithGemini(imageUrl: string) {
 
 // --- MAIN ROUTER ---
 export async function extractCard(imageUrl: string) {
+  if (!imageUrl || imageUrl.includes('undefined')) {
+    throw new Error('Image URL is invalid or incomplete (undefined found).');
+  }
+
   // Priority 1: Groq
   try {
-    console.log('Trying Groq...');
+    console.log('Trying Groq (Llama-3.2-11b)...');
     return await extractWithGroq(imageUrl);
-  } catch (e) {
-    console.warn('Groq failed:', e);
+  } catch (e: any) {
+    console.warn('Groq failed:', e.message);
   }
 
   // Priority 2: Mistral
   try {
-    console.log('Trying Mistral...');
+    console.log('Trying Mistral (Pixtral)...');
     return await extractWithMistral(imageUrl);
-  } catch (e) {
-    console.warn('Mistral failed:', e);
+  } catch (e: any) {
+    console.warn('Mistral failed:', e.message);
   }
 
   // Priority 3: Gemini
   try {
-    console.log('Trying Gemini...');
+    console.log('Trying Gemini (1.5-flash)...');
     return await extractWithGemini(imageUrl);
-  } catch (e) {
-    console.warn('Gemini failed:', e);
+  } catch (e: any) {
+    console.warn('Gemini failed:', e.message);
   }
 
-  throw new Error('All AI providers failed');
+  throw new Error('AI extraction failed: All providers (Groq, Mistral, Gemini) were unable to process the image.');
 }
 
 // --- AUDIO TRANSCRIPTION (Groq Whisper) ---

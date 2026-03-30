@@ -74,10 +74,17 @@ export async function POST(req: NextRequest) {
     // 3. Update Database
     contact.meetingTime = meetingDate;
     contact.meetingScheduled = true;
+    // Reset flags in case user re-schedules
+    contact.sentConfirmation = false;
+    contact.sent24hReminder = false;
+    contact.sent1hReminder = false;
+    contact.sentStartMessage = false;
+    contact.sentEndMessage = false;
     await contact.save();
 
-    // 4. Send WhatsApp Confirmation
     const ELEVENZA_API_KEY = process.env.ELEVENZA_API_KEY;
+
+    // 4. Send WhatsApp Confirmation to Owner (User)
     if (ELEVENZA_API_KEY && user.waPhone) {
       try {
         await fetch(`https://app.11za.in/apis/messages/sendTemplateMessage`, {
@@ -92,13 +99,37 @@ export async function POST(req: NextRequest) {
           })
         });
       } catch (waError: any) {
-        console.error("WhatsApp notification error:", waError.message);
+        console.error("WhatsApp notification error (Owner):", waError.message);
+      }
+    }
+
+    // 5. Send WhatsApp Confirmation to Client (Card Contact)
+    if (ELEVENZA_API_KEY && contact.phone) {
+      try {
+        const clientMessage = `Hello ${contact.name || 'there'},\n\nYour meeting with ${user.name || 'our team'} has been scheduled! 🤝\n\n🏢 *At:* ${user.name || 'BizSync Assistant'}\n📅 *Date:* ${meetingDate.toLocaleDateString('en-IN', { timeZone: userTimezone, dateStyle: 'full' })}\n⏰ *Time:* ${meetingDate.toLocaleTimeString('en-IN', { timeZone: userTimezone, timeStyle: 'short' })}\n\nWe will send you reminders before the meeting starts. See you soon!`;
+
+        await fetch(`https://app.11za.in/apis/messages/sendTemplateMessage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${ELEVENZA_API_KEY}`
+          },
+          body: JSON.stringify({
+            phoneNumber: contact.phone.replace(/\D/g, ''), // Clean number
+            message: clientMessage
+          })
+        });
+        
+        contact.sentConfirmation = true;
+        await contact.save();
+      } catch (waError: any) {
+        console.error("WhatsApp notification error (Client):", waError.message);
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Meeting scheduled successfully',
+      message: 'Meeting scheduled successfully and confirmations sent',
       calendarEventUrl
     });
 

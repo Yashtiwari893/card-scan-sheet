@@ -15,6 +15,11 @@ export interface IContact extends Document {
   remark?: string;
   meetingTime?: Date;
   meetingScheduled?: boolean;
+  sentConfirmation?: boolean;
+  sent24hReminder?: boolean;
+  sent1hReminder?: boolean;
+  sentStartMessage?: boolean;
+  sentEndMessage?: boolean;
   scannedAt: Date;
 }
 
@@ -33,6 +38,11 @@ const ContactSchema = new Schema<IContact>({
   remark: { type: String },
   meetingTime: { type: Date },
   meetingScheduled: { type: Boolean, default: false },
+  sentConfirmation: { type: Boolean, default: false },
+  sent24hReminder: { type: Boolean, default: false },
+  sent1hReminder: { type: Boolean, default: false },
+  sentStartMessage: { type: Boolean, default: false },
+  sentEndMessage: { type: Boolean, default: false },
   scannedAt: { type: Date, default: Date.now }
 });
 
