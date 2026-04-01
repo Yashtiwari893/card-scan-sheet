@@ -116,28 +116,33 @@ export async function POST(req: NextRequest) {
 
         console.log(`[SCHEDULE] Sending 'ocr_meeting' template via sendTemplate API to: ${clientPhone}`);
 
-        // Using FormData for multipart/form-data as per the CURL example
-        const formData = new FormData();
-        formData.append('authToken', ELEVENZA_API_KEY); // AUTH_TOKEN as parameter
-        formData.append('sendto', clientPhone);
-        formData.append('originWebsite', 'https://www.displ.in/');
-        formData.append('templateName', 'ocr_meeting');
-        formData.append('language', 'en');
-
-        // Dynamic variables (comma-separated string for 'data' field)
-        const variableData = [
+        // Formatting and cleaning variables
+        const variables = [
           contact.name || 'Client',      // {{name}}
           user.name || 'Our Team',       // {{your_name}}
           meetingTimeString,             // {{meeting_time}}
           user.waPhone || 'N/A',         // {{your_phone}}
           user.email || 'N/A'            // {{your_email}}
-        ].join(',');
+        ].map(v => v.replace(/,/g, '')); // Extra safety
 
-        formData.append('data', variableData);
+        // Using FormData for multipart/form-data as per 11za Cloud API requirements
+        const formData = new FormData();
+        formData.append('authToken', ELEVENZA_API_KEY);
+        formData.append('sendto', clientPhone.replace(/\D/g, '')); // Just digits
+        formData.append('originWebsite', 'https://www.displ.in/');
+        formData.append('templateName', 'ocr_meeting');
+        formData.append('language', 'en');
+        
+        // Pass each variable as a separate dataN field
+        variables.forEach((val, i) => {
+          formData.append(`data${i + 1}`, val);
+        });
+
+        // Also pass as 'data' JSON array just in case this version expects it
+        formData.append('data', JSON.stringify(variables));
 
         const response = await fetch(`https://app.11za.in/apis/template/sendTemplate`, {
           method: 'POST',
-          // Note: Browser/Native fetch handles 'Content-Type' automatically for FormData
           body: formData
         });
 
