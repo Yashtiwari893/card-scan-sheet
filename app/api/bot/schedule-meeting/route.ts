@@ -124,10 +124,8 @@ export async function POST(req: NextRequest) {
           },
           body: JSON.stringify({
             phoneNumber: clientPhone,
-            templateName: 'ocr_meeting', // Aapka banaya hua template
-            // 11za accepts variables in different ways depending on config, 
-            // but standard is templateData (array) or variables (object).
-            // Using positional array based on your screenshot order:
+            templateName: 'ocr_meeting', 
+            // Trying both common formats for 11za (templateData array vs variables object)
             templateData: [
               contact.name || 'Client',      // {{name}}
               user.name || 'Our Team',       // {{your_name}}
@@ -135,16 +133,26 @@ export async function POST(req: NextRequest) {
               user.waPhone || 'N/A',         // {{your_phone}}
               user.email || 'N/A'            // {{your_email}}
             ],
-            // Compatibility: Also sending as message in case 11za treats it as plain text fallback
+            // Standard fallback field
             message: `Hello ${contact.name || 'there'}, your meeting with ${user.name || 'our team'} is scheduled for ${meetingTimeString}. \n\nMy Details: \n📞 Phone: ${user.waPhone || 'N/A'} \n📧 Email: ${user.email} 🤝 See you soon!`
           })
         });
 
-        const data = await response.json();
-        console.log(`[11za Response - Client Template]:`, JSON.stringify(data));
+        // Debugging the response text first
+        const responseText = await response.text();
+        console.log(`[11za Raw Response]:`, responseText);
 
-        contact.sentConfirmation = true;
-        await contact.save();
+        try {
+          const data = JSON.parse(responseText);
+          console.log(`[11za Parsed Response]:`, JSON.stringify(data));
+        } catch (e) {
+          console.warn(`[11za] Response was not JSON, but status was ${response.status}`);
+        }
+
+        if (response.ok) {
+            contact.sentConfirmation = true;
+            await contact.save();
+        }
       } catch (waError: any) {
         console.error("WhatsApp notification error (Client Template):", waError.message);
       }
