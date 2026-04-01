@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     // 1. Create Google Calendar Event
     let calendarEventUrl = '';
     let calendarError = null;
-    
+
     const userTimezone = user.timezone || 'Asia/Kolkata';
 
     if (user.googleCalendar?.connected && user.googleCalendar.accessToken && user.googleCalendar.refreshToken) {
@@ -52,23 +52,23 @@ export async function POST(req: NextRequest) {
 
     // 2. Sync to Google Sheet (Column K) if possible
     if (user.googleSheets?.connected && user.googleSheets.sheetId && user.googleSheets.accessToken) {
-       try {
-         await updateCardMeetingInSheet(
-           user.googleSheets.sheetId,
-           user.googleSheets.accessToken,
-           user.googleSheets.refreshToken || '',
-           meetingDate.toLocaleString('en-IN')
-         );
-       } catch (sheetsError: any) {
-         console.error("Sheet sync error:", sheetsError.message);
-       }
+      try {
+        await updateCardMeetingInSheet(
+          user.googleSheets.sheetId,
+          user.googleSheets.accessToken,
+          user.googleSheets.refreshToken || '',
+          meetingDate.toLocaleString('en-IN')
+        );
+      } catch (sheetsError: any) {
+        console.error("Sheet sync error:", sheetsError.message);
+      }
     }
 
     if (calendarError && !calendarEventUrl) {
-        return NextResponse.json({ 
-            success: false, 
-            error: `Calendar Error: ${calendarError}. Please try reconnecting your Google account.` 
-        }, { status: 500 });
+      return NextResponse.json({
+        success: false,
+        error: `Calendar Error: ${calendarError}. Please try reconnecting your Google account.`
+      }, { status: 500 });
     }
 
     // 3. Update Database
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
       try {
         const clientPhone = contact.phone;
         const userTimezone = user.timezone || 'Asia/Kolkata';
-        
+
         // Formatting meeting time for the template
         const formattedDate = meetingDate.toLocaleDateString('en-IN', { timeZone: userTimezone, dateStyle: 'medium' });
         const formattedTime = meetingDate.toLocaleTimeString('en-IN', { timeZone: userTimezone, timeStyle: 'short' });
@@ -120,10 +120,10 @@ export async function POST(req: NextRequest) {
         const formData = new FormData();
         formData.append('authToken', ELEVENZA_API_KEY); // AUTH_TOKEN as parameter
         formData.append('sendto', clientPhone);
-        formData.append('originWebsite', 'https://11za.com/');
+        formData.append('originWebsite', 'https://www.displ.in/');
         formData.append('templateName', 'ocr_meeting');
         formData.append('language', 'en');
-        
+
         // Dynamic variables (comma-separated string for 'data' field)
         const variableData = [
           contact.name || 'Client',      // {{name}}
@@ -131,8 +131,8 @@ export async function POST(req: NextRequest) {
           meetingTimeString,             // {{meeting_time}}
           user.waPhone || 'N/A',         // {{your_phone}}
           user.email || 'N/A'            // {{your_email}}
-        ].join(','); 
-        
+        ].join(',');
+
         formData.append('data', variableData);
 
         const response = await fetch(`https://app.11za.in/apis/template/sendTemplate`, {
@@ -145,8 +145,8 @@ export async function POST(req: NextRequest) {
         console.log(`[11za Raw Response]:`, responseText);
 
         if (response.ok) {
-            contact.sentConfirmation = true;
-            await contact.save();
+          contact.sentConfirmation = true;
+          await contact.save();
         }
       } catch (waError: any) {
         console.error("WhatsApp notification error (11za Template):", waError.message);
