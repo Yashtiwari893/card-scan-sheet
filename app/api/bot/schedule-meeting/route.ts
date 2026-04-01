@@ -103,33 +103,56 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 5. Send WhatsApp Confirmation to Client (Card Contact)
+    // 5. Send WhatsApp Template Message to Client (The Person meeting is with)
     if (ELEVENZA_API_KEY && contact.phone) {
       try {
-        const clientMessage = `Hello ${contact.name || 'there'},\n\nYour meeting with ${user.name || 'our team'} has been scheduled! 🤝\n\n🏢 *At:* ${user.name || 'BizSync Assistant'}\n📅 *Date:* ${meetingDate.toLocaleDateString('en-IN', { timeZone: userTimezone, dateStyle: 'full' })}\n⏰ *Time:* ${meetingDate.toLocaleTimeString('en-IN', { timeZone: userTimezone, timeStyle: 'short' })}\n\nWe will send you reminders before the meeting starts. See you soon!`;
+        const clientPhone = contact.phone.replace(/\D/g, '');
+        const userTimezone = user.timezone || 'Asia/Kolkata';
+        
+        // Formatting meeting time for the template
+        const formattedDate = meetingDate.toLocaleDateString('en-IN', { timeZone: userTimezone, dateStyle: 'medium' });
+        const formattedTime = meetingDate.toLocaleTimeString('en-IN', { timeZone: userTimezone, timeStyle: 'short' });
+        const meetingTimeString = `${formattedDate} at ${formattedTime}`;
 
-        await fetch(`https://app.11za.in/apis/messages/sendTemplateMessage`, {
+        console.log(`[SCHEDULE] Sending 'ocr_meeting' template to client: ${clientPhone}`);
+
+        const response = await fetch(`https://app.11za.in/apis/messages/sendTemplateMessage`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${ELEVENZA_API_KEY}`
           },
           body: JSON.stringify({
-            phoneNumber: contact.phone.replace(/\D/g, ''), // Clean number
-            message: clientMessage
+            phoneNumber: clientPhone,
+            templateName: 'ocr_meeting', // Aapka banaya hua template
+            // 11za accepts variables in different ways depending on config, 
+            // but standard is templateData (array) or variables (object).
+            // Using positional array based on your screenshot order:
+            templateData: [
+              contact.name || 'Client',      // {{name}}
+              user.name || 'Our Team',       // {{your_name}}
+              meetingTimeString,             // {{meeting_time}}
+              user.waPhone || 'N/A',         // {{your_phone}}
+              user.email || 'N/A'            // {{your_email}}
+            ],
+            // Compatibility: Also sending as message in case 11za treats it as plain text fallback
+            message: `Hello ${contact.name || 'there'}, your meeting with ${user.name || 'our team'} is scheduled for ${meetingTimeString}. \n\nMy Details: \n📞 Phone: ${user.waPhone || 'N/A'} \n📧 Email: ${user.email} 🤝 See you soon!`
           })
         });
-        
+
+        const data = await response.json();
+        console.log(`[11za Response - Client Template]:`, JSON.stringify(data));
+
         contact.sentConfirmation = true;
         await contact.save();
       } catch (waError: any) {
-        console.error("WhatsApp notification error (Client):", waError.message);
+        console.error("WhatsApp notification error (Client Template):", waError.message);
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Meeting scheduled successfully and confirmations sent',
+      message: 'Meeting scheduled successfully with professional template',
       calendarEventUrl
     });
 
