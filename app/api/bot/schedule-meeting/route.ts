@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     // 5. Send WhatsApp Template Message to Client (The Person meeting is with)
     if (ELEVENZA_API_KEY && contact.phone) {
       try {
-        const clientPhone = contact.phone.replace(/\D/g, '');
+        const clientPhone = contact.phone;
         const userTimezone = user.timezone || 'Asia/Kolkata';
         
         // Formatting meeting time for the template
@@ -114,53 +114,48 @@ export async function POST(req: NextRequest) {
         const formattedTime = meetingDate.toLocaleTimeString('en-IN', { timeZone: userTimezone, timeStyle: 'short' });
         const meetingTimeString = `${formattedDate} at ${formattedTime}`;
 
-        console.log(`[SCHEDULE] Sending 'ocr_meeting' template to client: ${clientPhone}`);
+        console.log(`[SCHEDULE] Sending 'ocr_meeting' template via sendTemplate API to: ${clientPhone}`);
 
-        const response = await fetch(`https://app.11za.in/apis/messages/sendTemplateMessage`, {
+        // Using FormData for multipart/form-data as per the CURL example
+        const formData = new FormData();
+        formData.append('authToken', ELEVENZA_API_KEY); // AUTH_TOKEN as parameter
+        formData.append('sendto', clientPhone);
+        formData.append('originWebsite', 'https://11za.com/');
+        formData.append('templateName', 'ocr_meeting');
+        formData.append('language', 'en');
+        
+        // Dynamic variables (comma-separated string for 'data' field)
+        const variableData = [
+          contact.name || 'Client',      // {{name}}
+          user.name || 'Our Team',       // {{your_name}}
+          meetingTimeString,             // {{meeting_time}}
+          user.waPhone || 'N/A',         // {{your_phone}}
+          user.email || 'N/A'            // {{your_email}}
+        ].join(','); 
+        
+        formData.append('data', variableData);
+
+        const response = await fetch(`https://app.11za.in/apis/template/sendTemplate`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ELEVENZA_API_KEY}`
-          },
-          body: JSON.stringify({
-            phoneNumber: clientPhone,
-            templateName: 'ocr_meeting', 
-            // Trying both common formats for 11za (templateData array vs variables object)
-            templateData: [
-              contact.name || 'Client',      // {{name}}
-              user.name || 'Our Team',       // {{your_name}}
-              meetingTimeString,             // {{meeting_time}}
-              user.waPhone || 'N/A',         // {{your_phone}}
-              user.email || 'N/A'            // {{your_email}}
-            ],
-            // Standard fallback field
-            message: `Hello ${contact.name || 'there'}, your meeting with ${user.name || 'our team'} is scheduled for ${meetingTimeString}. \n\nMy Details: \n📞 Phone: ${user.waPhone || 'N/A'} \n📧 Email: ${user.email} 🤝 See you soon!`
-          })
+          // Note: Browser/Native fetch handles 'Content-Type' automatically for FormData
+          body: formData
         });
 
-        // Debugging the response text first
         const responseText = await response.text();
         console.log(`[11za Raw Response]:`, responseText);
-
-        try {
-          const data = JSON.parse(responseText);
-          console.log(`[11za Parsed Response]:`, JSON.stringify(data));
-        } catch (e) {
-          console.warn(`[11za] Response was not JSON, but status was ${response.status}`);
-        }
 
         if (response.ok) {
             contact.sentConfirmation = true;
             await contact.save();
         }
       } catch (waError: any) {
-        console.error("WhatsApp notification error (Client Template):", waError.message);
+        console.error("WhatsApp notification error (11za Template):", waError.message);
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Meeting scheduled successfully with professional template',
+      message: 'Meeting scheduled successfully with professional 11za template',
       calendarEventUrl
     });
 
