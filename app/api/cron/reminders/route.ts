@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     const now = new Date();
     console.log(`[CRON] Run started at: ${now.toISOString()}`);
-    
+
     const ELEVENZA_API_KEY = process.env.ELEVENZA_API_KEY;
     if (!ELEVENZA_API_KEY) {
       console.error('[CRON] ELEVENZA_API_KEY is missing in env');
@@ -27,13 +27,13 @@ export async function GET(req: NextRequest) {
     }
 
     // Window logic: 30-minute grace window for 15-min cron tasks
-    const bufferRange = 30 * 60000; 
+    const bufferRange = 30 * 60000;
 
     // --- QUERY 1: 24-HOUR REMINDERS ---
     const dayAhead = new Date(now.getTime() + 24 * 60 * 60000);
     const dayAheadStart = new Date(dayAhead.getTime() - bufferRange);
     const dayAheadEnd = new Date(dayAhead.getTime() + bufferRange);
-    
+
     const contacts24h = await Contact.find({
       meetingScheduled: true,
       sent24hReminder: false,
@@ -44,10 +44,10 @@ export async function GET(req: NextRequest) {
     for (const contact of contacts24h) {
       const user = await User.findById(contact.userId);
       const meetingTimeString = contact.meetingTime?.toLocaleString('en-IN', { timeZone: user?.timezone || 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) || '';
-      
+
       const variables = [
-        contact.name || 'Client', 
-        user?.name || 'Our Team', 
+        contact.name || 'Client',
+        user?.name || 'Our Team',
         meetingTimeString
       ];
 
@@ -73,8 +73,8 @@ export async function GET(req: NextRequest) {
       const meetingTimeString = contact.meetingTime?.toLocaleTimeString('en-IN', { timeZone: user?.timezone || 'Asia/Kolkata', timeStyle: 'short' }) || '';
 
       const variables = [
-        contact.name || 'Client', 
-        user?.name || 'Our Team', 
+        contact.name || 'Client',
+        user?.name || 'Our Team',
         meetingTimeString
       ];
 
@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
     for (const contact of contactsStart) {
       const user = await User.findById(contact.userId);
       const variables = [
-        contact.name || 'Client', 
+        contact.name || 'Client',
         user?.name || 'Our Team'
       ];
 
@@ -117,8 +117,8 @@ export async function GET(req: NextRequest) {
       await contact.save();
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       processed: {
         reminders24h: contacts24h.length,
         reminders1h: contacts1h.length,
@@ -146,7 +146,7 @@ async function sendTemplate(phone: string | undefined, templateName: string, var
     if (formattedPhone.length === 10) formattedPhone = '91' + formattedPhone;
 
     console.log(`[CRON] Sending ${templateName} to ${formattedPhone}`);
-    
+
     const resp = await fetch('https://api.11za.in/apis/template/sendTemplate', {
       method: 'POST',
       headers: {
@@ -156,13 +156,13 @@ async function sendTemplate(phone: string | undefined, templateName: string, var
         authToken: apiKey,
         sendto: formattedPhone,
         name: contactName || 'Customer',
-        originWebsite: 'www.displ.in',
+        originWebsite: 'https://www.displ.in/',
         templateName: templateName,
         language: 'en',
         data: variables
       })
     });
-    
+
     const data = await resp.json();
     console.log(`[11za Response] ${templateName}:`, JSON.stringify(data));
   } catch (e: any) {
