@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     // 1. Basic Security (Optional but recommended)
     const authHeader = req.headers.get('authorization');
-    const cronSecret = process.env.CRON_SECRET || 'your_default_secret_here';
+    const cronSecret = process.env.CRON_SECRET || 'cronjobocr';
 
     if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Unauthorized access' }, { status: 401 });
