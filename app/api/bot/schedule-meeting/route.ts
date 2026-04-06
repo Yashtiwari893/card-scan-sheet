@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
             authToken: ELEVENZA_API_KEY,
             sendto: formattedPhone,
             name: contact.name || 'Customer', // "name": "Name of the Customer"
-            originWebsite: 'www.displ.in',
+            originWebsite: 'https://www.displ.in/',
             templateName: 'ocr_meeting',
             language: 'en',
             data: variables // Proper array as per Postman
