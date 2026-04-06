@@ -43,8 +43,15 @@ export async function GET(req: NextRequest) {
 
     for (const contact of contacts24h) {
       const user = await User.findById(contact.userId);
-      const msg = `Reminder: You have a meeting with ${user?.name || 'our team'} in 24 hours! 📅\n\n⏰ Time: ${contact.meetingTime?.toLocaleTimeString('en-IN', { timeZone: user?.timezone || 'Asia/Kolkata', timeStyle: 'short' })}`;
-      await sendWhatsApp(contact.phone, msg, ELEVENZA_API_KEY, '24h');
+      const meetingTimeString = contact.meetingTime?.toLocaleString('en-IN', { timeZone: user?.timezone || 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) || '';
+      
+      const variables = [
+        contact.name || 'Client', 
+        user?.name || 'Our Team', 
+        meetingTimeString
+      ];
+
+      await sendTemplate(contact.phone, 'meeting_reminder', variables, ELEVENZA_API_KEY, contact.name);
       contact.sent24hReminder = true;
       await contact.save();
     }
@@ -63,8 +70,15 @@ export async function GET(req: NextRequest) {
 
     for (const contact of contacts1h) {
       const user = await User.findById(contact.userId);
-      const msg = `Heads up! Your meeting with ${user?.name || 'our team'} starts in 1 hour. Get ready! ⏰🤝`;
-      await sendWhatsApp(contact.phone, msg, ELEVENZA_API_KEY, '1h');
+      const meetingTimeString = contact.meetingTime?.toLocaleTimeString('en-IN', { timeZone: user?.timezone || 'Asia/Kolkata', timeStyle: 'short' }) || '';
+
+      const variables = [
+        contact.name || 'Client', 
+        user?.name || 'Our Team', 
+        meetingTimeString
+      ];
+
+      await sendTemplate(contact.phone, 'meeting_reminder_1', variables, ELEVENZA_API_KEY, contact.name);
       contact.sent1hReminder = true;
       await contact.save();
     }
@@ -79,8 +93,12 @@ export async function GET(req: NextRequest) {
 
     for (const contact of contactsStart) {
       const user = await User.findById(contact.userId);
-      const msg = `The meeting with ${user?.name || 'our team'} is starting NOW! Join in. 🚀`;
-      await sendWhatsApp(contact.phone, msg, ELEVENZA_API_KEY, 'Start');
+      const variables = [
+        contact.name || 'Client', 
+        user?.name || 'Our Team'
+      ];
+
+      await sendTemplate(contact.phone, 'meeting_start_reminder', variables, ELEVENZA_API_KEY, contact.name);
       contact.sentStartMessage = true;
       await contact.save();
     }
@@ -92,12 +110,9 @@ export async function GET(req: NextRequest) {
       sentEndMessage: false,
       meetingTime: { $lte: thirtyMinsAgo, $gte: new Date(thirtyMinsAgo.getTime() - bufferRange) }
     });
-    console.log(`[CRON] End Reminders found: ${contactsEnd.length}`);
 
     for (const contact of contactsEnd) {
-      const user = await User.findById(contact.userId);
-      const msg = `The meeting has ended. Hope it was productive! Thank you for connecting with ${user?.name || 'us'}. 🙏🤝`;
-      await sendWhatsApp(contact.phone, msg, ELEVENZA_API_KEY, 'End');
+      // Logic for end message (simple flag update for now)
       contact.sentEndMessage = true;
       await contact.save();
     }
@@ -118,31 +133,39 @@ export async function GET(req: NextRequest) {
   }
 }
 
-async function sendWhatsApp(phone: string | undefined, message: string, apiKey: string, type: string) {
+/**
+ * Sends a generic template via 11za API
+ */
+async function sendTemplate(phone: string | undefined, templateName: string, variables: string[], apiKey: string, contactName?: string) {
   if (!phone) {
-    console.warn(`[CRON] No phone for contact, skipping ${type} message`);
+    console.warn(`[CRON] No phone for contact, skipping ${templateName}`);
     return;
   }
   try {
-    const formattedPhone = phone.replace(/\D/g, '');
-    console.log(`[CRON] Sending ${type} message to ${formattedPhone}`);
+    let formattedPhone = phone.replace(/\D/g, '');
+    if (formattedPhone.length === 10) formattedPhone = '91' + formattedPhone;
+
+    console.log(`[CRON] Sending ${templateName} to ${formattedPhone}`);
     
-    const resp = await fetch('https://app.11za.in/apis/messages/sendTemplateMessage', {
+    const resp = await fetch('https://api.11za.in/apis/template/sendTemplate', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        phoneNumber: formattedPhone,
-        message: message
+        authToken: apiKey,
+        sendto: formattedPhone,
+        name: contactName || 'Customer',
+        originWebsite: 'www.displ.in',
+        templateName: templateName,
+        language: 'en',
+        data: variables
       })
     });
     
     const data = await resp.json();
-    console.log(`[11za Response] ${type}:`, JSON.stringify(data));
+    console.log(`[11za Response] ${templateName}:`, JSON.stringify(data));
   } catch (e: any) {
-    console.error(`[CRON] Error sending WhatsApp (${type}):`, e.message);
+    console.error(`[CRON] Error sending ${templateName}:`, e.message);
   }
 }
-
