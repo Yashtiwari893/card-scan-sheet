@@ -24,7 +24,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const meetingDate = new Date(dateTime);
+    // If dateTime is from <input type="datetime-local">, it won't have an offset.
+    // We assume it's Asia/Kolkata (+05:30) by default for this app.
+    const meetingDate = new Date(dateTime.includes('Z') || dateTime.includes('+') ? dateTime : `${dateTime}+05:30`);
 
     // 1. Create Google Calendar Event
     let calendarEventUrl = '';
