@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
 
         console.log(`[SCHEDULE] Sending 'ocr_meeting' template via sendTemplate API to: ${clientPhone}`);
 
-        // Dynamic variables for the template
+        // Dynamic variables for the template as per Postman collection
         const variables = [
           contact.name || 'Client',      // {{1}}
           user.name || 'Our Team',       // {{2}}
@@ -129,20 +129,19 @@ export async function POST(req: NextRequest) {
         let formattedPhone = clientPhone.replace(/\D/g, '');
         if (formattedPhone.length === 10) formattedPhone = '91' + formattedPhone;
 
-        const response = await fetch(`https://app.11za.in/apis/template/sendTemplate`, {
+        const response = await fetch(`https://api.11za.in/apis/template/sendTemplate`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ELEVENZA_API_KEY}`
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({
             authToken: ELEVENZA_API_KEY,
             sendto: formattedPhone,
-            originWebsite: 'https://www.displ.in/',
+            name: contact.name || 'Customer', // "name": "Name of the Customer"
+            originWebsite: 'www.displ.in',
             templateName: 'ocr_meeting',
             language: 'en',
-            BodyDynamicData: variables, // Sent as a proper JSON array
-            HeaderDynamicData: []
+            data: variables // Proper array as per Postman
           })
         });
 
