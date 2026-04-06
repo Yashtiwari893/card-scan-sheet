@@ -125,23 +125,25 @@ export async function POST(req: NextRequest) {
           user.email || 'N/A'            // {{5}}
         ];
 
-        // Removing all commas from individual values to prevent splitting issues
-        const variableDataString = variables.map(v => v.toString().replace(/,/g, '')).join(',');
-
-        // Using FormData for multipart/form-data
-        const formData = new FormData();
-        formData.append('authToken', ELEVENZA_API_KEY);
-        formData.append('sendto', clientPhone.replace(/\D/g, ''));
-        formData.append('originWebsite', 'https://www.displ.in/');
-        formData.append('templateName', 'ocr_meeting');
-        formData.append('language', 'en');
-        
-        // 11za specifically uses BodyDynamicData for the variables string
-        formData.append('BodyDynamicData', variableDataString);
+        // Format phone number (ensure 10 digits + 91 if needed)
+        let formattedPhone = clientPhone.replace(/\D/g, '');
+        if (formattedPhone.length === 10) formattedPhone = '91' + formattedPhone;
 
         const response = await fetch(`https://app.11za.in/apis/template/sendTemplate`, {
           method: 'POST',
-          body: formData
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${ELEVENZA_API_KEY}`
+          },
+          body: JSON.stringify({
+            authToken: ELEVENZA_API_KEY,
+            sendto: formattedPhone,
+            originWebsite: 'https://www.displ.in/',
+            templateName: 'ocr_meeting',
+            language: 'en',
+            BodyDynamicData: variables, // Sent as a proper JSON array
+            HeaderDynamicData: []
+          })
         });
 
         const responseText = await response.text();
